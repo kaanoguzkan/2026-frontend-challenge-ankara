@@ -89,25 +89,46 @@ export function podoDisappearanceTime(
   return times.sort().at(-1);
 }
 
+function podoOrdered(records: Record[], canonicalize: Canonicalize): Record[] {
+  return records
+    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
+    .sort((a, b) => recordWhen(a).localeCompare(recordWhen(b)));
+}
+
+function coordKey(lat: number, lng: number): string {
+  return `${lat.toFixed(4)},${lng.toFixed(4)}`;
+}
+
 export function podoTrail(
   records: Record[],
   canonicalize: Canonicalize = identityCanonicalize
 ): Array<[number, number]> {
-  return records
-    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
-    .sort((a, b) => recordWhen(a).localeCompare(recordWhen(b)))
-    .map((r) => [r.coordinates!.lat, r.coordinates!.lng] as [number, number]);
+  const seen = new Set<string>();
+  const out: Array<[number, number]> = [];
+  for (const r of podoOrdered(records, canonicalize)) {
+    const k = coordKey(r.coordinates!.lat, r.coordinates!.lng);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push([r.coordinates!.lat, r.coordinates!.lng]);
+  }
+  return out;
 }
 
 export function podoTrailSteps(
   records: Record[],
   canonicalize: Canonicalize = identityCanonicalize
 ): Map<string, number> {
-  const ordered = records
-    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
-    .sort((a, b) => recordWhen(a).localeCompare(recordWhen(b)));
+  const stepByCoord = new Map<string, number>();
   const out = new Map<string, number>();
-  ordered.forEach((r, i) => out.set(`${r.source}-${r.id}`, i + 1));
+  for (const r of podoOrdered(records, canonicalize)) {
+    const k = coordKey(r.coordinates!.lat, r.coordinates!.lng);
+    let step = stepByCoord.get(k);
+    if (step == null) {
+      step = stepByCoord.size + 1;
+      stepByCoord.set(k, step);
+    }
+    out.set(`${r.source}-${r.id}`, step);
+  }
   return out;
 }
 
