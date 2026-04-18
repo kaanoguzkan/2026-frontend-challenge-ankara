@@ -33,8 +33,10 @@ Additional info — architecture, every bonus, fixes, and trade-offs — is in [
 - Links records across forms by person name so clicking a person shows every trace of them.
 - Search, source filter chips, and a detail panel with cross-linked related records.
 - Loading skeletons, partial-fetch warnings, and an error boundary.
+- **Multi-page navigation** — Overview, People, Timeline, Map, Graph — each view has a dedicated URL hash.
 
 **Bonuses**
+- **Overview dashboard** — case brief (last confirmed sighting, last known location, last seen with), stat cards, per-source record breakdown, suspicion panel, and a "Most recent" feed.
 - **Timeline view** grouped by day.
 - **Map view** with OSM tiles, source-colored markers, a star pin at Podo's last confirmed location, a 1 km radius circle, and a numbered polyline showing Podo's chronological path (one step per unique place).
 - **Co-occurrence graph** — SVG radial layout, edges weighted by shared records.

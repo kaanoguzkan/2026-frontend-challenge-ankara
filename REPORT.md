@@ -25,13 +25,23 @@ An investigation dashboard that fetches submissions from five Jotform forms (Che
 | Fetch | Parallel `Promise.all` over 5 form IDs; partial failures reported to UI instead of failing the whole page. |
 | Normalize | `DD-MM-YYYY HH:mm` → ISO, `"lat,lng"` → `{lat, lng}`, skip `control_head`/`control_button` entries. |
 | Link | `groupByPerson` collects every name field (`person`, `partner`, `sender`, `recipient`, tip subjects), normalizes, returns people with their records. |
-| Views | List, Timeline, Map, Graph — switchable, all share the same filtered set. |
+| Views | Overview, People (list + detail), Timeline, Map, Graph — top-nav switchable, all share the same filtered set and URL hash. |
 | Search | Matches across names, locations, and text. |
 | Filter | Source chips + time-range scrubber + selected person all compose. |
 | Detail | Full record view + "Other records mentioning these people" cross-links. |
 | States | Loading skeletons, error banner, partial-fetch warning, per-view empty states. |
 
 ## 4. Bonuses
+
+### Overview dashboard
+Dedicated landing page framing the case at a glance:
+
+- **Case brief** header: last confirmed Podo sighting (absolute + relative time), last known location with coordinates, and "last seen with" chips that jump straight to the person.
+- **Stat cards** (records, people, post-disappearance records, persons of interest) — each clickable, routing to the relevant view.
+- **Records-by-source breakdown** as proportional bars.
+- Embedded **SummaryPanel** ("most suspicious") and a **Most recent** feed with fuzzy-aware name merging (aliases collapse to one entry when fuzzy mode is on).
+
+The time scrubber is hidden here so the Overview always reads against the full dataset; it reappears on People/Timeline/Map/Graph.
 
 ### Timeline view
 Records grouped by day, ordered by timestamp. Focuses on the selected person if any.
@@ -67,7 +77,7 @@ Records timestamped after Podo's last confirmed sighting get a `⚠ post-disappe
 Turkish character folding (`ğ→g`, `ş→s`, etc.) + Levenshtein distance. Toggle in the Controls so both modes are demoable. Selecting a person preserves selection across the toggle by re-mapping aliases.
 
 ### Time-range scrubber
-Dual-handle range over the data's min/max timestamps. Filters every view, including the graph and the map's numbered path.
+Dual-handle range over the data's min/max timestamps. Filters every view except Overview, including the graph and the map's numbered path. The scrubber keeps a local draft during drag and commits the global filter only on release, so fast scrubbing never cascades into a filter/map rebuild per frame.
 
 ### Shareable deep links
 URL hash serializes `view`, `person`, `q`, `sources`, `fuzzy`, `from`, `to`, `record`. A "Share link" button copies the current URL. Initial record deep-link applied once on data load so closing the detail panel doesn't re-open it from stale hash.
@@ -89,6 +99,8 @@ Header stacks at ≤900 px, layout collapses to one column at ≤720 px, control
 - **Responsive header stayed right-aligned.** The base `.app__header` rule was defined *after* the `@media` block, so the cascade re-applied the non-responsive version inside the media range. Moved all media queries to the end of the stylesheet.
 - **Map step numbers appeared to skip (1, 4, 8, 12…).** Multiple records were sharing coordinates, so markers stacked. Deduped steps by rounded lat/lng — every unique place gets one step, and records at that place share its number.
 - **`react-leaflet-cluster` incompatibility.** Clustering crashed at runtime against react-leaflet 4 + React 18, so it was dropped in favor of the numbered path + legend, which read cleaner for 45 records anyway.
+- **Time scrubber crash on fast drag.** Every pixel of motion was committing a new `timeRange`, which re-ran `applyFilters`, rebuilt Leaflet markers, and wrote the URL hash — enough to lock up or crash the page. Split into a local draft + release-to-commit so drags are cheap and only the final value propagates.
+- **Most Recent row alignment.** Source badges vary in width ("Checkin" vs "Anonymous Tips"), so the timestamp and name columns in the Overview's recent feed shifted row-to-row. Pinned the badge and timestamp to fixed grid columns; long names ellipsize.
 
 ## 6. Decisions and trade-offs
 
@@ -110,8 +122,9 @@ Header stacks at ≤900 px, layout collapses to one column at ≤720 px, control
 
 ```bash
 npm install
-cp server/.env.example server/.env    # set JOTFORM_API_KEY
 npm run dev                           # client + server together
 ```
+
+The three challenge API keys ship as defaults, so no `.env` setup is required. To override, create `server/.env` with `JOTFORM_API_KEY=key1,key2,key3` (comma-separated; rotated on 429).
 
 Client at `http://localhost:5173`, API at `http://localhost:3001/api/records`.
