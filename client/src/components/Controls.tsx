@@ -2,6 +2,7 @@ import { useState, type Ref } from "react";
 import type { Source } from "../types";
 import { SearchBar } from "./SearchBar";
 import { SourceFilter } from "./SourceFilter";
+import type { Theme } from "../hooks/useTheme";
 
 interface Props {
   search: string;
@@ -11,6 +12,8 @@ interface Props {
   fuzzy: boolean;
   onFuzzyChange: (value: boolean) => void;
   searchRef?: Ref<HTMLInputElement>;
+  theme: Theme;
+  onThemeChange: (theme: Theme) => void;
 }
 
 export function Controls({
@@ -21,6 +24,8 @@ export function Controls({
   fuzzy,
   onFuzzyChange,
   searchRef,
+  theme,
+  onThemeChange,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const handleShare = async () => {
@@ -46,6 +51,15 @@ export function Controls({
       </label>
       <button type="button" className="share-btn" onClick={handleShare} title="Copy link to this view">
         {copied ? "Copied!" : "Share link"}
+      </button>
+      <button
+        type="button"
+        className="share-btn"
+        onClick={() => onThemeChange(theme === "dark" ? "light" : "dark")}
+        title="Toggle theme"
+        aria-label="Toggle theme"
+      >
+        {theme === "dark" ? "☀ Light" : "☾ Dark"}
       </button>
     </div>
   );

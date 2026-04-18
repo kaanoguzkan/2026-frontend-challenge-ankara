@@ -119,7 +119,7 @@ export function CoOccurrenceGraph({ records, canonicalize, displayName, selected
               y1={a.y}
               x2={b.x}
               y2={b.y}
-              stroke={highlighted ? "#60a5fa" : "#475569"}
+              stroke={highlighted ? "var(--accent)" : "var(--chart-edge)"}
               strokeWidth={1 + (e.weight / maxWeight) * 3}
               strokeOpacity={faded ? 0.15 : highlighted ? 0.9 : 0.55}
             />
@@ -139,8 +139,8 @@ export function CoOccurrenceGraph({ records, canonicalize, displayName, selected
                 cx={n.x}
                 cy={n.y}
                 r={r}
-                fill={n.isPodo ? "#f59e0b" : isSelected ? "#60a5fa" : "#1f2937"}
-                stroke={isSelected ? "#ffffff" : n.isPodo ? "#fbbf24" : "#475569"}
+                fill={n.isPodo ? "var(--accent)" : isSelected ? "var(--accent)" : "var(--chart-node)"}
+                stroke={isSelected ? "var(--text)" : n.isPodo ? "var(--accent)" : "var(--chart-node-border)"}
                 strokeWidth={isSelected ? 3 : 1.5}
               />
               <text
@@ -148,7 +148,7 @@ export function CoOccurrenceGraph({ records, canonicalize, displayName, selected
                 y={n.y + r + 12}
                 textAnchor="middle"
                 fontSize={11}
-                fill={isSelected ? "#e2e8f0" : "#94a3b8"}
+                fill={isSelected ? "var(--text)" : "var(--muted)"}
                 pointerEvents="none"
               >
                 {n.label}

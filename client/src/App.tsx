@@ -3,6 +3,7 @@ import { useRecords } from "./hooks/useRecords";
 import { useInvestigation } from "./hooks/useInvestigation";
 import { useHashState } from "./hooks/useHashState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useTheme } from "./hooks/useTheme";
 import { groupByPerson } from "./lib/link";
 import { podoDisappearanceTime, podoLastCoord, podoTrail } from "./lib/summary";
 import { RecordList } from "./components/RecordList";
@@ -43,6 +44,7 @@ const VALID_VIEWS: View[] = ["list", "timeline", "map", "graph"];
 export function App() {
   const { data, loading, error } = useRecords();
   const [hash, setHash] = useHashState();
+  const [theme, setTheme] = useTheme();
 
   const [selectedPerson, setSelectedPerson] = useState<string | null>(hash.person || null);
   const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
@@ -71,12 +73,16 @@ export function App() {
     });
   }, [view, selectedPerson, search, enabledSources, fuzzy, timeRange, selectedRecord, setHash]);
 
-  const pendingRecordKey = hash.record || "";
+  const initialRecordKey = useRef(hash.record || "");
+  const appliedInitialRecord = useRef(false);
   useEffect(() => {
-    if (!data || !pendingRecordKey || selectedRecord) return;
-    const match = data.records.find((r) => `${r.source}-${r.id}` === pendingRecordKey);
+    if (!data || appliedInitialRecord.current) return;
+    appliedInitialRecord.current = true;
+    const key = initialRecordKey.current;
+    if (!key) return;
+    const match = data.records.find((r) => `${r.source}-${r.id}` === key);
     if (match) setSelectedRecord(match);
-  }, [data, pendingRecordKey, selectedRecord]);
+  }, [data]);
 
   const timeBounds = useMemo<[number, number] | null>(() => {
     if (!data) return null;
@@ -191,6 +197,8 @@ export function App() {
             fuzzy={fuzzy}
             onFuzzyChange={handleFuzzyChange}
             searchRef={searchRef}
+            theme={theme}
+            onThemeChange={setTheme}
           />
           {timeBounds && (
             <TimeScrubber
