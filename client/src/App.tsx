@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRecords } from "./hooks/useRecords";
 import { useInvestigation } from "./hooks/useInvestigation";
+import { useHashState } from "./hooks/useHashState";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { groupByPerson } from "./lib/link";
 import { RecordList } from "./components/RecordList";
 import { PeopleList } from "./components/PeopleList";
@@ -21,14 +23,40 @@ const ALL_SOURCES: Source[] = [
   "anonymousTips",
 ];
 
+function parseSources(raw: string | undefined): Set<Source> {
+  if (!raw) return new Set(ALL_SOURCES);
+  const picked = raw.split(",").filter((s): s is Source => ALL_SOURCES.includes(s as Source));
+  return picked.length ? new Set(picked) : new Set(ALL_SOURCES);
+}
+
+function serializeSources(s: Set<Source>): string {
+  return s.size === ALL_SOURCES.length ? "" : ALL_SOURCES.filter((x) => s.has(x)).join(",");
+}
+
+const VALID_VIEWS: View[] = ["list", "timeline", "map"];
+
 export function App() {
   const { data, loading, error } = useRecords();
-  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+  const [hash, setHash] = useHashState();
+
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(hash.person || null);
   const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
-  const [search, setSearch] = useState("");
-  const [enabledSources, setEnabledSources] = useState<Set<Source>>(new Set(ALL_SOURCES));
-  const [view, setView] = useState<View>("list");
-  const [fuzzy, setFuzzy] = useState(false);
+  const [search, setSearch] = useState(hash.q ?? "");
+  const [enabledSources, setEnabledSources] = useState<Set<Source>>(() => parseSources(hash.sources));
+  const [view, setView] = useState<View>(
+    VALID_VIEWS.includes(hash.view as View) ? (hash.view as View) : "list"
+  );
+  const [fuzzy, setFuzzy] = useState(hash.fuzzy === "1");
+
+  useEffect(() => {
+    setHash({
+      view: view === "list" ? "" : view,
+      person: selectedPerson ?? "",
+      q: search,
+      sources: serializeSources(enabledSources),
+      fuzzy: fuzzy ? "1" : "",
+    });
+  }, [view, selectedPerson, search, enabledSources, fuzzy, setHash]);
 
   const investigation = useInvestigation({
     records: data?.records ?? null,
@@ -72,9 +100,21 @@ export function App() {
     setSelectedRecord(null);
   };
 
+  const searchRef = useRef<HTMLInputElement>(null);
+
   const timelineRecords = filteredRecords.filter((r) =>
     r.people.some((n) => canonicalize(n) === timelineFocus.key)
   );
+
+  const navigableRecords = view === "timeline" ? timelineRecords : filteredRecords;
+
+  useKeyboardShortcuts({
+    records: navigableRecords,
+    selectedRecord,
+    onSelectRecord: setSelectedRecord,
+    onClearPerson: () => handleSelectPerson(null),
+    searchRef,
+  });
 
   return (
     <div className="app">
@@ -108,6 +148,7 @@ export function App() {
             onToggleSource={toggleSource}
             fuzzy={fuzzy}
             onFuzzyChange={handleFuzzyChange}
+            searchRef={searchRef}
           />
 
           <div className="layout">

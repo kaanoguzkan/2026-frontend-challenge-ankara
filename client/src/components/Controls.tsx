@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import type { Source } from "../types";
 import { SearchBar } from "./SearchBar";
 import { SourceFilter } from "./SourceFilter";
@@ -9,6 +10,7 @@ interface Props {
   onToggleSource: (source: Source) => void;
   fuzzy: boolean;
   onFuzzyChange: (value: boolean) => void;
+  searchRef?: Ref<HTMLInputElement>;
 }
 
 export function Controls({
@@ -18,10 +20,11 @@ export function Controls({
   onToggleSource,
   fuzzy,
   onFuzzyChange,
+  searchRef,
 }: Props) {
   return (
     <div className="controls">
-      <SearchBar value={search} onChange={onSearchChange} />
+      <SearchBar ref={searchRef} value={search} onChange={onSearchChange} />
       <SourceFilter enabled={enabledSources} onToggle={onToggleSource} />
       <label className="fuzzy-toggle">
         <input
