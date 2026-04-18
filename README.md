@@ -30,7 +30,7 @@ npm run dev
 - Client: <http://localhost:5173>
 - Server: <http://localhost:3001/api/records>
 
-See [PLAN.md](PLAN.md) for the step-by-step build plan, [REPORT.md](REPORT.md) for a full write-up of what was built, and [CLAUDE.md](CLAUDE.md) for API reference.
+Additional info — architecture, every bonus, fixes, and trade-offs — is in [REPORT.md](REPORT.md) (or [REPORT.pdf](REPORT.pdf)).
 
 ## Features
 
