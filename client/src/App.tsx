@@ -1,17 +1,17 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRecords } from "./hooks/useRecords";
+import { useInvestigation } from "./hooks/useInvestigation";
+import { groupByPerson } from "./lib/link";
 import { RecordList } from "./components/RecordList";
 import { PeopleList } from "./components/PeopleList";
-import { SearchBar } from "./components/SearchBar";
-import { SourceFilter } from "./components/SourceFilter";
 import { RecordDetail } from "./components/RecordDetail";
 import { Timeline } from "./components/Timeline";
 import { SummaryPanel } from "./components/SummaryPanel";
 import { MapView } from "./components/MapView";
-import { groupByPerson, recordsForPerson, normalizeName } from "./lib/link";
+import { Controls } from "./components/Controls";
+import { MainHeader } from "./components/MainHeader";
+import type { View } from "./components/ViewToggle";
 import type { Record, Source } from "./types";
-
-type View = "list" | "timeline" | "map";
 
 const ALL_SOURCES: Source[] = [
   "checkins",
@@ -21,83 +21,32 @@ const ALL_SOURCES: Source[] = [
   "anonymousTips",
 ];
 
-function normalizeSearchKey(s: string): string {
-  return s.toLowerCase().trim();
-}
-
 export function App() {
   const { data, loading, error } = useRecords();
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
   const [search, setSearch] = useState("");
   const [enabledSources, setEnabledSources] = useState<Set<Source>>(new Set(ALL_SOURCES));
-  const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
   const [view, setView] = useState<View>("list");
   const [fuzzy, setFuzzy] = useState(false);
 
-  const people = useMemo(() => (data ? groupByPerson(data.records, fuzzy) : []), [data, fuzzy]);
+  const investigation = useInvestigation({
+    records: data?.records ?? null,
+    fuzzy,
+    selectedPerson,
+    selectedRecord,
+    search,
+    enabledSources,
+  });
 
-  const aliasToKey = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const p of people) for (const a of p.aliases) m.set(a, p.key);
-    return m;
-  }, [people]);
-
-  const canonicalize = useMemo(() => {
-    return (name: string) => aliasToKey.get(normalizeName(name)) ?? normalizeName(name);
-  }, [aliasToKey]);
-
-  const aliasesForKey = useMemo(() => {
-    const m = new Map<string, string[]>();
-    for (const p of people) m.set(p.key, p.aliases);
-    return m;
-  }, [people]);
-
-  const timelineFocus = useMemo(() => {
-    if (!data) return { key: "podo", name: "Podo" };
-    if (selectedPerson) {
-      const p = people.find((p) => p.key === selectedPerson);
-      if (p) return { key: p.key, name: p.displayName };
-    }
-    const podo = people.find((p) => p.key === "podo");
-    return podo ? { key: podo.key, name: podo.displayName } : { key: "podo", name: "Podo" };
-  }, [data, selectedPerson, people]);
-
-  const filteredRecords = useMemo(() => {
-    if (!data) return [];
-    const q = normalizeSearchKey(search);
-    let pool = selectedPerson
-      ? recordsForPerson(data.records, aliasesForKey.get(selectedPerson) ?? [selectedPerson])
-      : data.records;
-    pool = pool.filter((r) => enabledSources.has(r.source));
-    if (q) {
-      pool = pool.filter((r) => {
-        const hay = [
-          ...r.people,
-          r.location ?? "",
-          r.text ?? "",
-          r.urgency ?? "",
-          r.confidence ?? "",
-        ]
-          .join(" ")
-          .toLowerCase();
-        return hay.includes(q);
-      });
-    }
-    return [...pool].sort((a, b) => {
-      const ta = a.timestamp ?? a.createdAt;
-      const tb = b.timestamp ?? b.createdAt;
-      return tb.localeCompare(ta);
-    });
-  }, [data, selectedPerson, enabledSources, search, aliasesForKey]);
-
-  const relatedRecords = useMemo(() => {
-    if (!data || !selectedRecord) return [];
-    const keys = new Set(selectedRecord.people.map((n) => canonicalize(n)));
-    return data.records.filter((r) => {
-      if (r.id === selectedRecord.id && r.source === selectedRecord.source) return false;
-      return r.people.some((n) => keys.has(canonicalize(n)));
-    });
-  }, [data, selectedRecord, canonicalize]);
+  const {
+    people,
+    canonicalize,
+    filteredRecords,
+    relatedRecords,
+    timelineFocus,
+    selectedPersonName,
+  } = investigation;
 
   const toggleSource = (s: Source) => {
     setEnabledSources((prev) => {
@@ -108,9 +57,24 @@ export function App() {
     });
   };
 
-  const selectedPersonName = selectedPerson
-    ? people.find((p) => p.key === selectedPerson)?.displayName
-    : null;
+  const handleFuzzyChange = (next: boolean) => {
+    if (selectedPerson && data) {
+      const nextPeople = groupByPerson(data.records, next);
+      const match = nextPeople.find((p) => p.aliases.includes(selectedPerson));
+      setSelectedPerson(match ? match.key : null);
+    }
+    setFuzzy(next);
+    setSelectedRecord(null);
+  };
+
+  const handleSelectPerson = (key: string | null) => {
+    setSelectedPerson(key);
+    setSelectedRecord(null);
+  };
+
+  const timelineRecords = filteredRecords.filter((r) =>
+    r.people.some((n) => canonicalize(n) === timelineFocus.key)
+  );
 
   return (
     <div className="app">
@@ -137,119 +101,67 @@ export function App() {
 
       {data && (
         <>
-          <div className="controls">
-            <SearchBar value={search} onChange={setSearch} />
-            <SourceFilter enabled={enabledSources} onToggle={toggleSource} />
-            <label className="fuzzy-toggle">
-              <input
-                type="checkbox"
-                checked={fuzzy}
-                onChange={(e) => {
-                  const next = e.target.checked;
-                  if (selectedPerson) {
-                    const nextPeople = data ? groupByPerson(data.records, next) : [];
-                    const match = nextPeople.find((p) => p.aliases.includes(selectedPerson));
-                    setSelectedPerson(match ? match.key : null);
-                  }
-                  setFuzzy(next);
-                  setSelectedRecord(null);
-                }}
-              />
-              <span>Fuzzy match</span>
-            </label>
-          </div>
+          <Controls
+            search={search}
+            onSearchChange={setSearch}
+            enabledSources={enabledSources}
+            onToggleSource={toggleSource}
+            fuzzy={fuzzy}
+            onFuzzyChange={handleFuzzyChange}
+          />
 
           <div className="layout">
             <PeopleList
               people={people}
               selectedKey={selectedPerson}
-              onSelect={(key) => {
-                setSelectedPerson(key);
-                setSelectedRecord(null);
-              }}
+              onSelect={handleSelectPerson}
             />
             <div className="workspace">
               <main className="main">
-              <div className="main__header">
-                <h2>
-                  {view === "timeline"
-                    ? `${timelineFocus.name}'s timeline`
-                    : selectedPersonName
-                    ? `Records involving ${selectedPersonName}`
-                    : "All records"}
-                </h2>
-                <span className="main__count">{filteredRecords.length}</span>
-                <div className="view-toggle">
-                  <button
-                    type="button"
-                    className={`view-toggle__btn${view === "list" ? " view-toggle__btn--on" : ""}`}
-                    onClick={() => setView("list")}
-                  >
-                    List
-                  </button>
-                  <button
-                    type="button"
-                    className={`view-toggle__btn${view === "timeline" ? " view-toggle__btn--on" : ""}`}
-                    onClick={() => setView("timeline")}
-                  >
-                    Timeline
-                  </button>
-                  <button
-                    type="button"
-                    className={`view-toggle__btn${view === "map" ? " view-toggle__btn--on" : ""}`}
-                    onClick={() => setView("map")}
-                  >
-                    Map
-                  </button>
-                </div>
-              </div>
-              {data && (
+                <MainHeader
+                  view={view}
+                  onViewChange={setView}
+                  count={filteredRecords.length}
+                  selectedPersonName={selectedPersonName}
+                  timelineFocusName={timelineFocus.name}
+                />
                 <SummaryPanel
                   records={data.records}
                   selectedPersonKey={selectedPerson}
-                  selectedPersonName={selectedPersonName ?? null}
+                  selectedPersonName={selectedPersonName}
                   canonicalize={canonicalize}
-                  onSelectPerson={(key) => {
-                    setSelectedPerson(key);
-                    setSelectedRecord(null);
-                  }}
+                  onSelectPerson={(key) => handleSelectPerson(key)}
                 />
-              )}
-              {view === "list" && (
-                <RecordList
-                  records={filteredRecords}
-                  selectedId={selectedRecord?.id}
-                  onSelect={setSelectedRecord}
-                />
-              )}
-              {view === "timeline" && (
-                <Timeline
-                  records={filteredRecords.filter((r) =>
-                    r.people.some((n) => canonicalize(n) === timelineFocus.key)
-                  )}
-                  selectedId={selectedRecord?.id}
-                  focusName={timelineFocus.name}
-                  onSelect={setSelectedRecord}
-                />
-              )}
-              {view === "map" && (
-                <MapView
-                  records={filteredRecords}
-                  selectedId={selectedRecord?.id}
-                  onSelect={setSelectedRecord}
-                />
-              )}
-            </main>
+                {view === "list" && (
+                  <RecordList
+                    records={filteredRecords}
+                    selectedId={selectedRecord?.id}
+                    onSelect={setSelectedRecord}
+                  />
+                )}
+                {view === "timeline" && (
+                  <Timeline
+                    records={timelineRecords}
+                    selectedId={selectedRecord?.id}
+                    focusName={timelineFocus.name}
+                    onSelect={setSelectedRecord}
+                  />
+                )}
+                {view === "map" && (
+                  <MapView
+                    records={filteredRecords}
+                    selectedId={selectedRecord?.id}
+                    onSelect={setSelectedRecord}
+                  />
+                )}
+              </main>
               {selectedRecord && (
                 <RecordDetail
                   record={selectedRecord}
                   relatedRecords={relatedRecords}
                   onClose={() => setSelectedRecord(null)}
                   onSelectRecord={setSelectedRecord}
-                  onSelectPerson={(key) => {
-                    setSelectedPerson(key);
-                    setSelectedRecord(null);
-                  }}
+                  onSelectPerson={(key) => handleSelectPerson(key)}
                 />
               )}
             </div>

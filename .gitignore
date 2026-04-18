@@ -5,3 +5,6 @@ dist/
 .DS_Store
 *.log
 .claude/
+*.tsbuildinfo
+client/vite.config.d.ts
+client/vite.config.js

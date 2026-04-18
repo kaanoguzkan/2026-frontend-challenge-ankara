@@ -1,5 +1,7 @@
 import type { Record } from "../types";
 import { SOURCE_COLORS, SOURCE_LABELS } from "../types";
+import { formatFull, formatShort } from "../lib/format";
+import { normalizeName } from "../lib/names";
 
 interface Props {
   record: Record;
@@ -59,7 +61,7 @@ export function RecordDetail({
                 key={name}
                 type="button"
                 className="detail__person"
-                onClick={() => onSelectPerson(name.toLowerCase().trim().replace(/\s+/g, " "))}
+                onClick={() => onSelectPerson(normalizeName(name))}
               >
                 {name}
               </button>
@@ -126,18 +128,3 @@ export function RecordDetail({
   );
 }
 
-function formatFull(s: string): string {
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString();
-}
-function formatShort(s: string): string {
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}

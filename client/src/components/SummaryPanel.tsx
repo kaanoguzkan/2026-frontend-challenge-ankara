@@ -1,6 +1,7 @@
 import type { Record } from "../types";
 import { lastSeenWith, lastKnownLocation, suspicionRanking } from "../lib/summary";
 import type { Canonicalize } from "../lib/summary";
+import { formatShort } from "../lib/format";
 
 interface Props {
   records: Record[];
@@ -25,7 +26,7 @@ export function SummaryPanel({ records, selectedPersonKey, selectedPersonName, c
               {lastLoc.location ?? "—"}
               <span className="summary__meta">
                 {" · "}
-                {formatWhen(lastLoc.timestamp ?? lastLoc.createdAt)}
+                {formatShort(lastLoc.timestamp ?? lastLoc.createdAt)}
               </span>
             </div>
           </div>
@@ -82,13 +83,3 @@ export function SummaryPanel({ records, selectedPersonKey, selectedPersonName, c
   );
 }
 
-function formatWhen(s: string): string {
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}

@@ -1,16 +1,10 @@
 import type { Record } from "../types";
-
-function baseNormalize(name: string): string {
-  return name.toLowerCase().trim().replace(/\s+/g, " ");
-}
-
-function recordWhen(r: Record): string {
-  return r.timestamp ?? r.createdAt;
-}
+import { normalizeName } from "./names";
+import { recordWhen } from "./format";
 
 export type Canonicalize = (name: string) => string;
 
-const identityCanonicalize: Canonicalize = baseNormalize;
+const identityCanonicalize: Canonicalize = normalizeName;
 
 export interface CoOccurrence {
   key: string;
@@ -44,11 +38,10 @@ export function lastKnownLocation(
   personKey: string,
   canonicalize: Canonicalize = identityCanonicalize
 ): Record | undefined {
-  const mine = records
+  return records
     .filter((r) => r.people.some((n) => canonicalize(n) === personKey))
     .filter((r) => r.location || r.coordinates)
-    .sort((a, b) => recordWhen(b).localeCompare(recordWhen(a)));
-  return mine[0];
+    .sort((a, b) => recordWhen(b).localeCompare(recordWhen(a)))[0];
 }
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
@@ -72,61 +65,78 @@ export interface SuspicionEntry {
 }
 
 const PROXIMITY_KM = 1;
+const PODO_KEY = "podo";
 
-export function suspicionRanking(
-  records: Record[],
-  canonicalize: Canonicalize = identityCanonicalize,
-  limit = 5
-): SuspicionEntry[] {
-  const podoLast = records
-    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === "podo"))
+function makeEmptyEntry(key: string, displayName: string): SuspicionEntry {
+  return { key, displayName, score: 0, tipMentions: 0, urgentMessages: 0, nearPodo: false };
+}
+
+function findPodoCoord(records: Record[], canonicalize: Canonicalize): { lat: number; lng: number } | undefined {
+  const latest = records
+    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
     .sort((a, b) => recordWhen(b).localeCompare(recordWhen(a)))[0];
-  const podoCoord = podoLast?.coordinates;
+  return latest?.coordinates;
+}
 
+function scoreMentions(records: Record[], canonicalize: Canonicalize): Map<string, SuspicionEntry> {
   const map = new Map<string, SuspicionEntry>();
-  const ensure = (name: string): SuspicionEntry | null => {
+  const upsert = (name: string): SuspicionEntry | null => {
     const key = canonicalize(name);
-    if (!key || key === "podo") return null;
+    if (!key || key === PODO_KEY) return null;
     let e = map.get(key);
     if (!e) {
-      e = { key, displayName: name, score: 0, tipMentions: 0, urgentMessages: 0, nearPodo: false };
+      e = makeEmptyEntry(key, name);
       map.set(key, e);
     } else if (name.length > e.displayName.length) {
       e.displayName = name;
     }
     return e;
   };
-
   for (const r of records) {
     if (r.source === "anonymousTips") {
       for (const n of r.people) {
-        const e = ensure(n);
+        const e = upsert(n);
         if (e) { e.tipMentions += 1; e.score += 2; }
       }
     } else if (r.source === "messages" && r.urgency && /high|urgent/i.test(r.urgency)) {
       for (const n of r.people) {
-        const e = ensure(n);
+        const e = upsert(n);
         if (e) { e.urgentMessages += 1; e.score += 1; }
       }
     }
   }
+  return map;
+}
 
-  if (podoCoord) {
-    const nearKeys = new Set<string>();
-    for (const r of records) {
-      if (!r.coordinates) continue;
-      if (haversineKm(r.coordinates, podoCoord) > PROXIMITY_KM) continue;
-      for (const n of r.people) {
-        const k = canonicalize(n);
-        if (k && k !== "podo") nearKeys.add(k);
-      }
-    }
-    for (const k of nearKeys) {
-      const e = map.get(k);
-      if (e && !e.nearPodo) { e.nearPodo = true; e.score += 1; }
+function flagNearPodo(
+  records: Record[],
+  canonicalize: Canonicalize,
+  podoCoord: { lat: number; lng: number },
+  map: Map<string, SuspicionEntry>
+): void {
+  const nearKeys = new Set<string>();
+  for (const r of records) {
+    if (!r.coordinates) continue;
+    if (haversineKm(r.coordinates, podoCoord) > PROXIMITY_KM) continue;
+    for (const n of r.people) {
+      const k = canonicalize(n);
+      if (k && k !== PODO_KEY) nearKeys.add(k);
     }
   }
+  for (const k of nearKeys) {
+    const e = map.get(k);
+    if (e && !e.nearPodo) { e.nearPodo = true; e.score += 1; }
+  }
+}
 
+export function suspicionRanking(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize,
+  limit = 5
+): SuspicionEntry[] {
+  const map = scoreMentions(records, canonicalize);
+  const podoCoord = findPodoCoord(records, canonicalize);
+  if (podoCoord) flagNearPodo(records, canonicalize, podoCoord, map);
   return Array.from(map.values())
     .filter((e) => e.score > 0)
     .sort((a, b) => b.score - a.score)

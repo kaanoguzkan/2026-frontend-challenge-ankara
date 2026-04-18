@@ -1,5 +1,6 @@
 import type { Record } from "../types";
 import { SOURCE_COLORS, SOURCE_LABELS } from "../types";
+import { formatShort } from "../lib/format";
 
 interface Props {
   records: Record[];
@@ -40,7 +41,7 @@ export function Timeline({ records, selectedId, focusName, onSelect }: Props) {
             onClick={() => onSelect(r)}
           >
             <div className="timeline__gutter">
-              <span className="timeline__time">{formatWhen(when)}</span>
+              <span className="timeline__time">{formatShort(when)}</span>
               <span
                 className="timeline__dot"
                 style={{ background: SOURCE_COLORS[r.source] }}
@@ -69,13 +70,3 @@ export function Timeline({ records, selectedId, focusName, onSelect }: Props) {
   );
 }
 
-function formatWhen(s: string): string {
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
