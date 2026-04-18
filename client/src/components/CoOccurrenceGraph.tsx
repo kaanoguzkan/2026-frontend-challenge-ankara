@@ -35,8 +35,8 @@ const RADIUS = Math.min(WIDTH, HEIGHT) / 2 - 60;
 function buildEdges(records: Record[], canonicalize: Canonicalize): Map<string, Edge> {
   const edges = new Map<string, Edge>();
   for (const r of records) {
-    if (r.source !== "sightings" && r.source !== "checkins" && r.source !== "messages") continue;
     const keys = Array.from(new Set(r.people.map(canonicalize).filter(Boolean)));
+    if (keys.length < 2) continue;
     for (let i = 0; i < keys.length; i++) {
       for (let j = i + 1; j < keys.length; j++) {
         const [a, b] = keys[i] < keys[j] ? [keys[i], keys[j]] : [keys[j], keys[i]];
