@@ -1,19 +1,28 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRecords } from "./hooks/useRecords";
 import { RecordList } from "./components/RecordList";
-import { SOURCE_LABELS } from "./types";
+import { PeopleList } from "./components/PeopleList";
+import { groupByPerson, recordsForPerson } from "./lib/link";
 
 export function App() {
   const { data, loading, error } = useRecords();
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
 
-  const sortedRecords = useMemo(() => {
+  const people = useMemo(() => (data ? groupByPerson(data.records) : []), [data]);
+
+  const visibleRecords = useMemo(() => {
     if (!data) return [];
-    return [...data.records].sort((a, b) => {
+    const pool = selectedPerson ? recordsForPerson(data.records, selectedPerson) : data.records;
+    return [...pool].sort((a, b) => {
       const ta = a.timestamp ?? a.createdAt;
       const tb = b.timestamp ?? b.createdAt;
       return tb.localeCompare(ta);
     });
-  }, [data]);
+  }, [data, selectedPerson]);
+
+  const selectedPersonName = selectedPerson
+    ? people.find((p) => p.key === selectedPerson)?.displayName
+    : null;
 
   return (
     <div className="app">
@@ -24,8 +33,7 @@ export function App() {
         </div>
         {data && (
           <div className="app__meta">
-            {data.records.length} records ·{" "}
-            {Object.keys(SOURCE_LABELS).length} sources · cached{" "}
+            {data.records.length} records · {people.length} people · cached{" "}
             {new Date(data.cachedAt).toLocaleTimeString()}
           </div>
         )}
@@ -39,7 +47,26 @@ export function App() {
         </div>
       ) : null}
 
-      {data && <RecordList records={sortedRecords} />}
+      {data && (
+        <div className="layout">
+          <PeopleList
+            people={people}
+            selectedKey={selectedPerson}
+            onSelect={setSelectedPerson}
+          />
+          <main className="main">
+            <div className="main__header">
+              <h2>
+                {selectedPersonName
+                  ? `Records involving ${selectedPersonName}`
+                  : "All records"}
+              </h2>
+              <span className="main__count">{visibleRecords.length}</span>
+            </div>
+            <RecordList records={visibleRecords} />
+          </main>
+        </div>
+      )}
     </div>
   );
 }

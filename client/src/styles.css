@@ -15,9 +15,76 @@
 html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(--text); }
 
 .app {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px 48px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.main__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.main__header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.main__count {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.people {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+.people__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 4px;
+}
+.people__header h2 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.people__count { font-size: 11px; color: var(--muted); }
+.people__list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.people__item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.1s ease;
+}
+.people__item:hover { background: var(--surface-hover); }
+.people__item--selected { background: var(--surface-hover); box-shadow: inset 2px 0 0 var(--accent); }
+.people__item--all { border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: 4px; color: var(--muted); }
+.people__item--podo .people__name::after {
+  content: "⚑";
+  margin-left: 6px;
+  color: var(--accent);
+}
+.people__name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.people__stats { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .people { position: static; max-height: none; }
 }
 
 .app__header {

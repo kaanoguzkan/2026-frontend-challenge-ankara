@@ -19,7 +19,7 @@ Form IDs, API shape, auth, and data-gotchas live in [CLAUDE.md](CLAUDE.md) — d
 - [x] Step 0 — Repo scaffolding
 - [x] Step 1 — Server: fetch + normalize
 - [x] Step 2 — Client: scaffold + list view
-- [ ] Step 3 — Record linking + people list
+- [x] Step 3 — Record linking + people list
 - [ ] Step 4 — Search, filter, detail
 - [ ] Step 5 — Core ship (README + polish)
 - [ ] Bonus A — Timeline
