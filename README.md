@@ -15,17 +15,11 @@ Stack: React + TypeScript (Vite) on the client, Node + TypeScript (Express) on t
 **Prereqs:** Node 20+, npm 10+.
 
 ```bash
-# 1. Install (root + both workspaces)
 npm install
-
-# 2. Configure Jotform API keys
-cp server/.env.example server/.env
-# Edit server/.env — set JOTFORM_API_KEY=key1,key2,key3
-# (multiple keys are rotated on 429 rate-limits)
-
-# 3. Run both server and client in dev
 npm run dev
 ```
+
+The challenge's Jotform API keys ship as defaults, so no `.env` setup is needed. To use your own, create `server/.env` with `JOTFORM_API_KEY=key1,key2,key3` (multiple keys are rotated on 429 rate-limits).
 
 - Client: <http://localhost:5173>
 - Server: <http://localhost:3001/api/records>

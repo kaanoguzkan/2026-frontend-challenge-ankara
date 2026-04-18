@@ -4,12 +4,15 @@ import cors from "cors";
 import { fetchAllRecords, SOURCES } from "./jotform.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
-const API_KEY = process.env.JOTFORM_API_KEY;
 
-if (!API_KEY) {
-  console.error("Missing JOTFORM_API_KEY in environment");
-  process.exit(1);
-}
+// Challenge keys are already public in CLAUDE.md, so we ship them as defaults
+// to keep setup friction-free. Override via server/.env if you have your own.
+const DEFAULT_KEYS = [
+  "ad39735f1449a6dc28d60e0921352665",
+  "54a934fa20b1ccc3a5bd1d2076f90556",
+  "5593acd695caab1a3805c3af8532df09",
+].join(",");
+const API_KEY = process.env.JOTFORM_API_KEY || DEFAULT_KEYS;
 
 const app = express();
 app.use(cors());
