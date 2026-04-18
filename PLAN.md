@@ -24,7 +24,7 @@ Form IDs, API shape, auth, and data-gotchas live in [CLAUDE.md](CLAUDE.md) — d
 - [x] Step 5 — Core ship (README + polish)
 - [x] Bonus A — Timeline
 - [x] Bonus B — Summary panels ("last seen with" / "most suspicious")
-- [ ] Bonus C — Map
+- [x] Bonus C — Map
 - [ ] Bonus D — Fuzzy matching
 
 Update this block after each step. Current on-disk state: only [CLAUDE.md](CLAUDE.md) + [README.md](README.md) exist.

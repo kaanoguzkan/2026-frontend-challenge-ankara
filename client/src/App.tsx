@@ -7,10 +7,11 @@ import { SourceFilter } from "./components/SourceFilter";
 import { RecordDetail } from "./components/RecordDetail";
 import { Timeline } from "./components/Timeline";
 import { SummaryPanel } from "./components/SummaryPanel";
+import { MapView } from "./components/MapView";
 import { groupByPerson, recordsForPerson } from "./lib/link";
 import type { Record, Source } from "./types";
 
-type View = "list" | "timeline";
+type View = "list" | "timeline" | "map";
 
 const ALL_SOURCES: Source[] = [
   "checkins",
@@ -157,6 +158,13 @@ export function App() {
                   >
                     Timeline
                   </button>
+                  <button
+                    type="button"
+                    className={`view-toggle__btn${view === "map" ? " view-toggle__btn--on" : ""}`}
+                    onClick={() => setView("map")}
+                  >
+                    Map
+                  </button>
                 </div>
               </div>
               {data && (
@@ -170,13 +178,14 @@ export function App() {
                   }}
                 />
               )}
-              {view === "list" ? (
+              {view === "list" && (
                 <RecordList
                   records={filteredRecords}
                   selectedId={selectedRecord?.id}
                   onSelect={setSelectedRecord}
                 />
-              ) : (
+              )}
+              {view === "timeline" && (
                 <Timeline
                   records={filteredRecords.filter((r) =>
                     r.people.some(
@@ -185,6 +194,13 @@ export function App() {
                   )}
                   selectedId={selectedRecord?.id}
                   focusName={timelineFocus.name}
+                  onSelect={setSelectedRecord}
+                />
+              )}
+              {view === "map" && (
+                <MapView
+                  records={filteredRecords}
+                  selectedId={selectedRecord?.id}
                   onSelect={setSelectedRecord}
                 />
               )}
