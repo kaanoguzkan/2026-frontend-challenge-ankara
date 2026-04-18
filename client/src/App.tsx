@@ -173,6 +173,7 @@ export function App() {
                   selectedPersonName={selectedPersonName}
                   canonicalize={canonicalize}
                   onSelectPerson={(key) => handleSelectPerson(key)}
+                  onSelectRecord={setSelectedRecord}
                 />
                 {view === "list" && (
                   <RecordList

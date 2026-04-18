@@ -146,6 +146,33 @@ function flagNearPodo(
   }
 }
 
+export interface SuspectEvidence {
+  tips: Record[];
+  urgentMessages: Record[];
+  nearPodo: Record[];
+}
+
+export function suspectEvidence(
+  records: Record[],
+  personKey: string,
+  canonicalize: Canonicalize = identityCanonicalize
+): SuspectEvidence {
+  const tips: Record[] = [];
+  const urgentMessages: Record[] = [];
+  const nearPodoRecords: Record[] = [];
+  const podoCoord = findPodoCoord(records, canonicalize);
+  for (const r of records) {
+    const mentionsPerson = r.people.some((n) => canonicalize(n) === personKey);
+    if (!mentionsPerson) continue;
+    if (r.source === "anonymousTips") tips.push(r);
+    else if (r.source === "messages" && r.urgency && /high|urgent/i.test(r.urgency)) urgentMessages.push(r);
+    if (podoCoord && r.coordinates && haversineKm(r.coordinates, podoCoord) <= PROXIMITY_KM) {
+      nearPodoRecords.push(r);
+    }
+  }
+  return { tips, urgentMessages, nearPodo: nearPodoRecords };
+}
+
 export function suspicionRanking(
   records: Record[],
   canonicalize: Canonicalize = identityCanonicalize,
