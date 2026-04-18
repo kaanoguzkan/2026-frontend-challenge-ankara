@@ -171,6 +171,12 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail, p
             <span>Podo — last seen (1 km radius)</span>
           </div>
         )}
+        {podoSteps && podoSteps.size > 0 && (
+          <div className="map__legend-row">
+            <span className="map__legend-step">1</span>
+            <span>Podo's path — step # by time, one per place</span>
+          </div>
+        )}
         {presentSources.map((s) => (
           <div key={s} className="map__legend-row">
             <span
