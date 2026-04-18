@@ -69,7 +69,13 @@ export function MapView({ records, selectedId, onSelect, podoCoord }: Props) {
           <Circle
             center={[podoCoord.lat, podoCoord.lng]}
             radius={1000}
-            pathOptions={{ color: "#f59e0b", weight: 1, fillColor: "#f59e0b", fillOpacity: 0.08 }}
+            pathOptions={{
+              color: "#ff2bd6",
+              weight: 2,
+              dashArray: "6 4",
+              fillColor: "#ff2bd6",
+              fillOpacity: 0.12,
+            }}
           />
         )}
         {withCoords.map((r) => {
