@@ -548,8 +548,26 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   .detail { position: static; max-height: none; }
 }
 @media (max-width: 720px) {
+  .app { padding: 16px 12px 32px; }
   .layout { grid-template-columns: 1fr; }
-  .people { position: static; max-height: none; }
+  .people { position: static; max-height: 200px; overflow-y: auto; }
+  .app__header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .app__meta { font-size: 11px; }
+  .controls { gap: 8px; }
+  .search { flex: 1 1 100%; min-width: 0; }
+  .share-btn { padding: 6px 10px; }
+  .main__header { flex-wrap: wrap; gap: 6px; }
+  .main__header h2 { font-size: 16px; flex: 1 1 100%; }
+  .view-toggle { flex: 1 1 100%; }
+  .scrubber__row { grid-template-columns: 48px 1fr; }
+  .scrubber__value { grid-column: 2; text-align: left; font-size: 10px; }
+  .summary__evidence-row { grid-template-columns: 1fr auto; }
+  .summary__evidence-source { display: none; }
+  .timeline__row { grid-template-columns: 68px 1fr; gap: 6px; }
+  .timeline__day { padding-left: 76px; }
+  .record-item__row { flex-wrap: wrap; }
+  .record-item__when { flex-basis: 100%; margin-left: 0; }
+  .graph { padding: 6px; }
 }
 
 .app__header {
