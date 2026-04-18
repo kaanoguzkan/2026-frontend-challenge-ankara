@@ -99,6 +99,18 @@ export function podoTrail(
     .map((r) => [r.coordinates!.lat, r.coordinates!.lng] as [number, number]);
 }
 
+export function podoTrailSteps(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize
+): Map<string, number> {
+  const ordered = records
+    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
+    .sort((a, b) => recordWhen(a).localeCompare(recordWhen(b)));
+  const out = new Map<string, number>();
+  ordered.forEach((r, i) => out.set(`${r.source}-${r.id}`, i + 1));
+  return out;
+}
+
 function findPodoCoord(records: Record[], canonicalize: Canonicalize): { lat: number; lng: number } | undefined {
   const latest = records
     .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))

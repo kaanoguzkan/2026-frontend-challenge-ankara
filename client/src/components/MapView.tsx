@@ -17,6 +17,16 @@ interface Props {
   onSelect: (record: Record) => void;
   podoCoord?: { lat: number; lng: number };
   podoTrail?: Array<[number, number]>;
+  podoSteps?: Map<string, number>;
+}
+
+function stepIcon(n: number): L.DivIcon {
+  return L.divIcon({
+    className: "podo-step",
+    html: `<div class="podo-step__num" aria-label="Podo step ${n}">${n}</div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
 }
 
 const ANKARA_CENTER: [number, number] = [39.925, 32.866];
@@ -39,7 +49,7 @@ function PanToSelected({ target }: { target: [number, number] | null }) {
   return null;
 }
 
-export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }: Props) {
+export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail, podoSteps }: Props) {
   const withCoords = useMemo(
     () => records.filter((r): r is Record & { coordinates: { lat: number; lng: number } } => !!r.coordinates),
     [records]
@@ -113,11 +123,13 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
         )}
         {withCoords.map((r) => {
           const selected = r.id === selectedId;
+          const stepKey = `${r.source}-${r.id}`;
+          const step = podoSteps?.get(stepKey);
           return (
             <CircleMarker
-              key={`${r.source}-${r.id}`}
+              key={stepKey}
               center={[r.coordinates.lat, r.coordinates.lng]}
-              radius={selected ? 10 : 7}
+              radius={step ? 11 : selected ? 10 : 7}
               pathOptions={{
                 color: selected ? "var(--text)" : SOURCE_COLORS[r.source],
                 weight: selected ? 3 : 1,
@@ -135,6 +147,20 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
                 </div>
               </Popup>
             </CircleMarker>
+          );
+        })}
+        {withCoords.map((r) => {
+          const stepKey = `${r.source}-${r.id}`;
+          const step = podoSteps?.get(stepKey);
+          if (!step) return null;
+          return (
+            <Marker
+              key={`step-${stepKey}`}
+              position={[r.coordinates.lat, r.coordinates.lng]}
+              icon={stepIcon(step)}
+              eventHandlers={{ click: () => onSelect(r) }}
+              interactive
+            />
           );
         })}
       </MapContainer>
