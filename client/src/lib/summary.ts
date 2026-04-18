@@ -71,6 +71,13 @@ function makeEmptyEntry(key: string, displayName: string): SuspicionEntry {
   return { key, displayName, score: 0, tipMentions: 0, urgentMessages: 0, nearPodo: false };
 }
 
+export function podoLastCoord(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize
+): { lat: number; lng: number } | undefined {
+  return findPodoCoord(records, canonicalize);
+}
+
 function findPodoCoord(records: Record[], canonicalize: Canonicalize): { lat: number; lng: number } | undefined {
   const latest = records
     .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))

@@ -18,3 +18,15 @@ export function formatShort(s: string): string {
 export function recordWhen(r: { timestamp?: string; createdAt: string }): string {
   return r.timestamp ?? r.createdAt;
 }
+
+export function formatDay(s: string): string {
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+export function dayKey(s: string): string {
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}

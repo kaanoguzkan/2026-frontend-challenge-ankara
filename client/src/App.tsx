@@ -4,6 +4,7 @@ import { useInvestigation } from "./hooks/useInvestigation";
 import { useHashState } from "./hooks/useHashState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { groupByPerson } from "./lib/link";
+import { podoLastCoord } from "./lib/summary";
 import { RecordList } from "./components/RecordList";
 import { PeopleList } from "./components/PeopleList";
 import { RecordDetail } from "./components/RecordDetail";
@@ -193,6 +194,7 @@ export function App() {
                     records={filteredRecords}
                     selectedId={selectedRecord?.id}
                     onSelect={setSelectedRecord}
+                    podoCoord={podoLastCoord(data.records, canonicalize)}
                   />
                 )}
               </main>

@@ -1,6 +1,7 @@
+import { Fragment } from "react";
 import type { Record } from "../types";
 import { SOURCE_COLORS, SOURCE_LABELS } from "../types";
-import { formatShort } from "../lib/format";
+import { dayKey, formatDay, formatShort } from "../lib/format";
 
 interface Props {
   records: Record[];
@@ -26,44 +27,50 @@ export function Timeline({ records, selectedId, focusName, onSelect }: Props) {
       return ta.localeCompare(tb);
     });
 
+  let lastDay = "";
   return (
     <div className="timeline">
       {ordered.map((r, i) => {
         const when = r.timestamp ?? r.createdAt;
+        const day = dayKey(when);
+        const showHeader = day !== lastDay;
+        lastDay = day;
         const others = r.people.filter(
           (n) => n.toLowerCase().trim() !== focusName.toLowerCase().trim()
         );
         return (
-          <button
-            key={`${r.source}-${r.id}`}
-            type="button"
-            className={`timeline__row${r.id === selectedId ? " timeline__row--selected" : ""}`}
-            onClick={() => onSelect(r)}
-          >
-            <div className="timeline__gutter">
-              <span className="timeline__time">{formatShort(when)}</span>
-              <span
-                className="timeline__dot"
-                style={{ background: SOURCE_COLORS[r.source] }}
-              />
-              {i < ordered.length - 1 && <span className="timeline__line" />}
-            </div>
-            <div className="timeline__card">
-              <div className="timeline__card-header">
+          <Fragment key={`${r.source}-${r.id}`}>
+            {showHeader && <div className="timeline__day">{formatDay(when)}</div>}
+            <button
+              type="button"
+              className={`timeline__row${r.id === selectedId ? " timeline__row--selected" : ""}`}
+              onClick={() => onSelect(r)}
+            >
+              <div className="timeline__gutter">
+                <span className="timeline__time">{formatShort(when)}</span>
                 <span
-                  className="record-item__badge"
+                  className="timeline__dot"
                   style={{ background: SOURCE_COLORS[r.source] }}
-                >
-                  {SOURCE_LABELS[r.source]}
-                </span>
-                {r.location && <span className="timeline__loc">📍 {r.location}</span>}
+                />
+                {i < ordered.length - 1 && <span className="timeline__line" />}
               </div>
-              {others.length > 0 && (
-                <div className="timeline__with">with {others.join(", ")}</div>
-              )}
-              {r.text && <div className="timeline__text">{r.text}</div>}
-            </div>
-          </button>
+              <div className="timeline__card">
+                <div className="timeline__card-header">
+                  <span
+                    className="record-item__badge"
+                    style={{ background: SOURCE_COLORS[r.source] }}
+                  >
+                    {SOURCE_LABELS[r.source]}
+                  </span>
+                  {r.location && <span className="timeline__loc">📍 {r.location}</span>}
+                </div>
+                {others.length > 0 && (
+                  <div className="timeline__with">with {others.join(", ")}</div>
+                )}
+                {r.text && <div className="timeline__text">{r.text}</div>}
+              </div>
+            </button>
+          </Fragment>
         );
       })}
     </div>
