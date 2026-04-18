@@ -204,7 +204,7 @@ export function App() {
             theme={theme}
             onThemeChange={setTheme}
           />
-          {timeBounds && (
+          {timeBounds && view !== "overview" && (
             <TimeScrubber
               min={timeBounds[0]}
               max={timeBounds[1]}
@@ -228,6 +228,7 @@ export function App() {
               <OverviewPage
                 records={data.records}
                 canonicalize={canonicalize}
+                displayName={(key: string) => people.find((p) => p.key === key)?.displayName ?? key}
                 selectedPerson={selectedPerson}
                 selectedPersonName={selectedPersonName}
                 onSelectPerson={(key) => {

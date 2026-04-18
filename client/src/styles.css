@@ -367,7 +367,7 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   all: unset;
   cursor: pointer;
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: 120px 120px 1fr;
   grid-template-rows: auto auto;
   column-gap: 10px;
   row-gap: 2px;
@@ -376,7 +376,8 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 }
 .recent__item:hover { background: var(--surface-hover); }
 .recent__badge {
-  grid-row: 1;
+  grid-column: 1; grid-row: 1;
+  justify-self: start;
   padding: 2px 8px;
   border-radius: 10px;
   color: #0a0d12;
@@ -384,10 +385,11 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   font-weight: 700;
   letter-spacing: 0.04em;
   align-self: center;
+  white-space: nowrap;
 }
-.recent__when { grid-row: 1; font-size: 11px; color: var(--muted); align-self: center; }
-.recent__who { grid-row: 1; font-size: 13px; color: var(--text); font-weight: 500; }
-.recent__where { grid-column: 1 / -1; grid-row: 2; font-size: 12px; color: var(--muted); }
+.recent__when { grid-column: 2; grid-row: 1; font-size: 11px; color: var(--muted); align-self: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.recent__who { grid-column: 3; grid-row: 1; font-size: 13px; color: var(--text); font-weight: 500; align-self: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent__where { grid-column: 2 / -1; grid-row: 2; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .view-toggle {
   margin-left: auto;

@@ -14,6 +14,7 @@ import { SummaryPanel } from "./SummaryPanel";
 interface Props {
   records: Record[];
   canonicalize: Canonicalize;
+  displayName: (key: string) => string;
   selectedPerson: string | null;
   selectedPersonName: string | null;
   onSelectPerson: (key: string) => void;
@@ -38,6 +39,7 @@ function formatRelative(iso: string | undefined): string {
 export function OverviewPage({
   records,
   canonicalize,
+  displayName,
   selectedPerson,
   selectedPersonName,
   onSelectPerson,
@@ -193,7 +195,19 @@ export function OverviewPage({
                     {SOURCE_LABELS[r.source]}
                   </span>
                   <span className="recent__when">{formatShort(r.timestamp ?? r.createdAt)}</span>
-                  <span className="recent__who">{r.people.join(", ") || "—"}</span>
+                  <span className="recent__who">
+                    {(() => {
+                      const seen = new Set<string>();
+                      const names: string[] = [];
+                      for (const n of r.people) {
+                        const k = canonicalize(n);
+                        if (seen.has(k)) continue;
+                        seen.add(k);
+                        names.push(displayName(k));
+                      }
+                      return names.join(", ") || "—";
+                    })()}
+                  </span>
                   {r.location && <span className="recent__where">📍 {r.location}</span>}
                 </button>
               </li>
