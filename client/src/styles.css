@@ -292,17 +292,20 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 .summary__rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .summary__rank-btn {
   all: unset;
+  box-sizing: border-box;
+  width: 100%;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 20px 1fr auto;
+  grid-template-columns: 24px 1fr 44px;
   column-gap: 10px;
   row-gap: 2px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   background: var(--bg);
   border: 1px solid transparent;
 }
+.summary__rank-btn > .summary__rank-score { justify-self: end; }
 .summary__rank-btn:hover { border-color: var(--border); }
 .summary__rank-pos { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .summary__rank-name { font-size: 14px; font-weight: 500; }
