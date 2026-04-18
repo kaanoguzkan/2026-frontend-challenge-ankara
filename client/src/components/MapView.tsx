@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Circle, Polyline, Popup, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
 import type { Record } from "../types";
 import { SOURCE_COLORS, SOURCE_LABELS } from "../types";
@@ -9,6 +9,7 @@ interface Props {
   selectedId?: string;
   onSelect: (record: Record) => void;
   podoCoord?: { lat: number; lng: number };
+  podoTrail?: Array<[number, number]>;
 }
 
 const ANKARA_CENTER: [number, number] = [39.925, 32.866];
@@ -31,7 +32,7 @@ function PanToSelected({ target }: { target: [number, number] | null }) {
   return null;
 }
 
-export function MapView({ records, selectedId, onSelect, podoCoord }: Props) {
+export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }: Props) {
   const withCoords = useMemo(
     () => records.filter((r): r is Record & { coordinates: { lat: number; lng: number } } => !!r.coordinates),
     [records]
@@ -65,6 +66,12 @@ export function MapView({ records, selectedId, onSelect, podoCoord }: Props) {
         />
         <FitBounds bounds={bounds} />
         <PanToSelected target={selectedCoord} />
+        {podoTrail && podoTrail.length > 1 && (
+          <Polyline
+            positions={podoTrail}
+            pathOptions={{ color: "#0ea5b7", weight: 2.5, opacity: 0.9 }}
+          />
+        )}
         {podoCoord && (
           <Circle
             center={[podoCoord.lat, podoCoord.lng]}

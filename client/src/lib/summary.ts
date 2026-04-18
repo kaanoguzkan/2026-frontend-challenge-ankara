@@ -78,6 +78,16 @@ export function podoLastCoord(
   return findPodoCoord(records, canonicalize);
 }
 
+export function podoTrail(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize
+): Array<[number, number]> {
+  return records
+    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
+    .sort((a, b) => recordWhen(a).localeCompare(recordWhen(b)))
+    .map((r) => [r.coordinates!.lat, r.coordinates!.lng] as [number, number]);
+}
+
 function findPodoCoord(records: Record[], canonicalize: Canonicalize): { lat: number; lng: number } | undefined {
   const latest = records
     .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === PODO_KEY))
