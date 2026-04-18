@@ -1,17 +1,19 @@
 import type { Record } from "../types";
 import { lastSeenWith, lastKnownLocation, suspicionRanking } from "../lib/summary";
+import type { Canonicalize } from "../lib/summary";
 
 interface Props {
   records: Record[];
   selectedPersonKey: string | null;
   selectedPersonName: string | null;
+  canonicalize: Canonicalize;
   onSelectPerson: (key: string) => void;
 }
 
-export function SummaryPanel({ records, selectedPersonKey, selectedPersonName, onSelectPerson }: Props) {
+export function SummaryPanel({ records, selectedPersonKey, selectedPersonName, canonicalize, onSelectPerson }: Props) {
   if (selectedPersonKey) {
-    const cooc = lastSeenWith(records, selectedPersonKey);
-    const lastLoc = lastKnownLocation(records, selectedPersonKey);
+    const cooc = lastSeenWith(records, selectedPersonKey, canonicalize);
+    const lastLoc = lastKnownLocation(records, selectedPersonKey, canonicalize);
     if (!cooc.length && !lastLoc) return null;
     return (
       <aside className="summary">
@@ -50,7 +52,7 @@ export function SummaryPanel({ records, selectedPersonKey, selectedPersonName, o
     );
   }
 
-  const top = suspicionRanking(records);
+  const top = suspicionRanking(records, canonicalize);
   if (!top.length) return null;
   return (
     <aside className="summary">

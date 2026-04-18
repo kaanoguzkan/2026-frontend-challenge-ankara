@@ -422,6 +422,26 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   color: var(--accent);
 }
 .people__name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.people__aliases {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(255, 179, 71, 0.12);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.fuzzy-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+.fuzzy-toggle input { accent-color: var(--accent); margin: 0; }
+.fuzzy-toggle:hover { color: var(--text); }
 .people__stats { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1000px) {

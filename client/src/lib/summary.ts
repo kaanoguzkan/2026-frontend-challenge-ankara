@@ -1,6 +1,6 @@
 import type { Record } from "../types";
 
-function normalizeName(name: string): string {
+function baseNormalize(name: string): string {
   return name.toLowerCase().trim().replace(/\s+/g, " ");
 }
 
@@ -8,19 +8,28 @@ function recordWhen(r: Record): string {
   return r.timestamp ?? r.createdAt;
 }
 
+export type Canonicalize = (name: string) => string;
+
+const identityCanonicalize: Canonicalize = baseNormalize;
+
 export interface CoOccurrence {
   key: string;
   displayName: string;
   count: number;
 }
 
-export function lastSeenWith(records: Record[], personKey: string, limit = 3): CoOccurrence[] {
+export function lastSeenWith(
+  records: Record[],
+  personKey: string,
+  canonicalize: Canonicalize = identityCanonicalize,
+  limit = 3
+): CoOccurrence[] {
   const tally = new Map<string, CoOccurrence>();
   for (const r of records) {
     if (r.source !== "sightings" && r.source !== "checkins") continue;
-    if (!r.people.some((n) => normalizeName(n) === personKey)) continue;
+    if (!r.people.some((n) => canonicalize(n) === personKey)) continue;
     for (const n of r.people) {
-      const k = normalizeName(n);
+      const k = canonicalize(n);
       if (!k || k === personKey) continue;
       const e = tally.get(k);
       if (e) e.count += 1;
@@ -30,9 +39,13 @@ export function lastSeenWith(records: Record[], personKey: string, limit = 3): C
   return Array.from(tally.values()).sort((a, b) => b.count - a.count).slice(0, limit);
 }
 
-export function lastKnownLocation(records: Record[], personKey: string): Record | undefined {
+export function lastKnownLocation(
+  records: Record[],
+  personKey: string,
+  canonicalize: Canonicalize = identityCanonicalize
+): Record | undefined {
   const mine = records
-    .filter((r) => r.people.some((n) => normalizeName(n) === personKey))
+    .filter((r) => r.people.some((n) => canonicalize(n) === personKey))
     .filter((r) => r.location || r.coordinates)
     .sort((a, b) => recordWhen(b).localeCompare(recordWhen(a)));
   return mine[0];
@@ -60,20 +73,26 @@ export interface SuspicionEntry {
 
 const PROXIMITY_KM = 1;
 
-export function suspicionRanking(records: Record[], limit = 5): SuspicionEntry[] {
+export function suspicionRanking(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize,
+  limit = 5
+): SuspicionEntry[] {
   const podoLast = records
-    .filter((r) => r.coordinates && r.people.some((n) => normalizeName(n) === "podo"))
+    .filter((r) => r.coordinates && r.people.some((n) => canonicalize(n) === "podo"))
     .sort((a, b) => recordWhen(b).localeCompare(recordWhen(a)))[0];
   const podoCoord = podoLast?.coordinates;
 
   const map = new Map<string, SuspicionEntry>();
   const ensure = (name: string): SuspicionEntry | null => {
-    const key = normalizeName(name);
+    const key = canonicalize(name);
     if (!key || key === "podo") return null;
     let e = map.get(key);
     if (!e) {
       e = { key, displayName: name, score: 0, tipMentions: 0, urgentMessages: 0, nearPodo: false };
       map.set(key, e);
+    } else if (name.length > e.displayName.length) {
+      e.displayName = name;
     }
     return e;
   };
@@ -98,7 +117,7 @@ export function suspicionRanking(records: Record[], limit = 5): SuspicionEntry[]
       if (!r.coordinates) continue;
       if (haversineKm(r.coordinates, podoCoord) > PROXIMITY_KM) continue;
       for (const n of r.people) {
-        const k = normalizeName(n);
+        const k = canonicalize(n);
         if (k && k !== "podo") nearKeys.add(k);
       }
     }

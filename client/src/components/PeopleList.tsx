@@ -31,7 +31,14 @@ export function PeopleList({ people, selectedKey, onSelect }: Props) {
               className={`people__item${isSelected ? " people__item--selected" : ""}${isPodo ? " people__item--podo" : ""}`}
               onClick={() => onSelect(p.key)}
             >
-              <span className="people__name">{p.displayName}</span>
+              <span className="people__name">
+                {p.displayName}
+                {p.aliases.length > 1 && (
+                  <span className="people__aliases" title={p.aliases.join(", ")}>
+                    +{p.aliases.length - 1}
+                  </span>
+                )}
+              </span>
               <span className="people__stats">
                 {p.records.length} · {p.sources.size}
               </span>
