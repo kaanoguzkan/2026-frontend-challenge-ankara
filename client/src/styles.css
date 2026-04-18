@@ -541,6 +541,74 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 .graph__svg { width: 100%; height: auto; max-height: 70vh; background: #0b1220; border-radius: 8px; }
 .graph__node:hover circle { stroke: #ffffff; }
 .graph__hint { color: var(--muted); font-size: 12px; margin: 0; }
+.error-boundary {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.error-boundary__title { color: var(--danger); font-size: 14px; font-weight: 600; }
+.error-boundary__msg { color: var(--muted); font-size: 12px; font-family: monospace; }
+.error-boundary__retry {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.error-boundary__retry:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.skeleton-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.skeleton-people {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.skeleton-main { display: flex; flex-direction: column; gap: 10px; }
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.skeleton-line {
+  background: linear-gradient(90deg, var(--surface-hover), var(--border), var(--surface-hover));
+  background-size: 200% 100%;
+  border-radius: 6px;
+  height: 12px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-line--title { width: 60%; height: 16px; }
+.skeleton-line--row { height: 14px; }
+.skeleton-line--controls { height: 40px; }
+.skeleton-line--badge { width: 80px; height: 16px; }
+.skeleton-line--text { width: 85%; }
+.skeleton-line--short { width: 45%; }
+@media (max-width: 720px) {
+  .skeleton-layout { grid-template-columns: 1fr; }
+}
 .people__stats { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1000px) {

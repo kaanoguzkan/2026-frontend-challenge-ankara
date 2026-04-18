@@ -15,6 +15,8 @@ import { Controls } from "./components/Controls";
 import { MainHeader } from "./components/MainHeader";
 import { TimeScrubber } from "./components/TimeScrubber";
 import { CoOccurrenceGraph } from "./components/CoOccurrenceGraph";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LoadingSkeleton } from "./components/Skeleton";
 import type { View } from "./components/ViewToggle";
 import type { Record, Source } from "./types";
 
@@ -50,7 +52,11 @@ export function App() {
     VALID_VIEWS.includes(hash.view as View) ? (hash.view as View) : "list"
   );
   const [fuzzy, setFuzzy] = useState(hash.fuzzy === "1");
-  const [timeRange, setTimeRange] = useState<[number, number] | null>(null);
+  const [timeRange, setTimeRange] = useState<[number, number] | null>(() => {
+    const from = Number(hash.from);
+    const to = Number(hash.to);
+    return Number.isFinite(from) && Number.isFinite(to) && from < to ? [from, to] : null;
+  });
 
   useEffect(() => {
     setHash({
@@ -59,8 +65,18 @@ export function App() {
       q: search,
       sources: serializeSources(enabledSources),
       fuzzy: fuzzy ? "1" : "",
+      from: timeRange ? String(timeRange[0]) : "",
+      to: timeRange ? String(timeRange[1]) : "",
+      record: selectedRecord ? `${selectedRecord.source}-${selectedRecord.id}` : "",
     });
-  }, [view, selectedPerson, search, enabledSources, fuzzy, setHash]);
+  }, [view, selectedPerson, search, enabledSources, fuzzy, timeRange, selectedRecord, setHash]);
+
+  const pendingRecordKey = hash.record || "";
+  useEffect(() => {
+    if (!data || !pendingRecordKey || selectedRecord) return;
+    const match = data.records.find((r) => `${r.source}-${r.id}` === pendingRecordKey);
+    if (match) setSelectedRecord(match);
+  }, [data, pendingRecordKey, selectedRecord]);
 
   const timeBounds = useMemo<[number, number] | null>(() => {
     if (!data) return null;
@@ -157,7 +173,7 @@ export function App() {
         )}
       </header>
 
-      {loading && <div className="status status--loading">Loading records…</div>}
+      {loading && !data && <LoadingSkeleton />}
       {error && <div className="status status--error">Failed to load: {error}</div>}
       {data?.errors.length ? (
         <div className="status status--warn">
@@ -193,6 +209,7 @@ export function App() {
               onSelect={handleSelectPerson}
             />
             <div className="workspace">
+              <ErrorBoundary>
               <main className="main">
                 <MainHeader
                   view={view}
@@ -246,6 +263,7 @@ export function App() {
                   />
                 )}
               </main>
+              </ErrorBoundary>
               {selectedRecord && (
                 <RecordDetail
                   record={selectedRecord}
