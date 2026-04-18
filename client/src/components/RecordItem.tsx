@@ -29,8 +29,8 @@ export function RecordItem({ record, onSelect, selected, postDisappearance }: Pr
           {record.people.length ? record.people.join(", ") : "—"}
         </span>
         {postDisappearance && (
-          <span className="record-item__anomaly" title="Logged after Podo's last known sighting">
-            ⚠ after
+          <span className="record-item__anomaly" title="Timestamped after Podo's last confirmed sighting — possible lead or contradiction">
+            ⚠ post-disappearance
           </span>
         )}
         <span className="record-item__when">{when ? formatShort(when) : ""}</span>
