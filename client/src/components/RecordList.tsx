@@ -8,9 +8,10 @@ interface Props {
   onSelect?: (record: Record) => void;
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
+  postDisappearanceSince?: string;
 }
 
-export function RecordList({ records, selectedId, onSelect, hasActiveFilters, onClearFilters }: Props) {
+export function RecordList({ records, selectedId, onSelect, hasActiveFilters, onClearFilters, postDisappearanceSince }: Props) {
   if (!records.length) {
     return (
       <EmptyState
@@ -23,14 +24,19 @@ export function RecordList({ records, selectedId, onSelect, hasActiveFilters, on
   }
   return (
     <div className="record-list">
-      {records.map((r) => (
-        <RecordItem
-          key={`${r.source}-${r.id}`}
-          record={r}
-          onSelect={onSelect}
-          selected={r.id === selectedId}
-        />
-      ))}
+      {records.map((r) => {
+        const when = r.timestamp ?? r.createdAt;
+        const post = !!(postDisappearanceSince && when && when > postDisappearanceSince);
+        return (
+          <RecordItem
+            key={`${r.source}-${r.id}`}
+            record={r}
+            onSelect={onSelect}
+            selected={r.id === selectedId}
+            postDisappearance={post}
+          />
+        );
+      })}
     </div>
   );
 }

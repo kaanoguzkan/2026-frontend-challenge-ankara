@@ -583,6 +583,17 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   color: var(--muted);
   font-size: 12px;
 }
+.record-item__anomaly {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+  border-radius: 10px;
+  padding: 1px 6px;
+  background: color-mix(in srgb, #fbbf24 15%, transparent);
+}
+.record-item--anomaly { border-left: 2px solid #fbbf24; }
 .record-item__location {
   font-size: 13px;
   color: var(--muted);

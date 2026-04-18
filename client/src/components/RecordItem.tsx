@@ -6,15 +6,16 @@ interface Props {
   record: Record;
   onSelect?: (record: Record) => void;
   selected?: boolean;
+  postDisappearance?: boolean;
 }
 
-export function RecordItem({ record, onSelect, selected }: Props) {
+export function RecordItem({ record, onSelect, selected, postDisappearance }: Props) {
   const when = record.timestamp ?? record.createdAt;
   return (
     <button
       type="button"
       data-record-key={`${record.source}-${record.id}`}
-      className={`record-item${selected ? " record-item--selected" : ""}`}
+      className={`record-item${selected ? " record-item--selected" : ""}${postDisappearance ? " record-item--anomaly" : ""}`}
       onClick={() => onSelect?.(record)}
     >
       <div className="record-item__row">
@@ -27,6 +28,11 @@ export function RecordItem({ record, onSelect, selected }: Props) {
         <span className="record-item__people">
           {record.people.length ? record.people.join(", ") : "—"}
         </span>
+        {postDisappearance && (
+          <span className="record-item__anomaly" title="Logged after Podo's last known sighting">
+            ⚠ after
+          </span>
+        )}
         <span className="record-item__when">{when ? formatShort(when) : ""}</span>
       </div>
       {record.location && <div className="record-item__location">📍 {record.location}</div>}

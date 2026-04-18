@@ -4,7 +4,7 @@ import { useInvestigation } from "./hooks/useInvestigation";
 import { useHashState } from "./hooks/useHashState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { groupByPerson } from "./lib/link";
-import { podoLastCoord, podoTrail } from "./lib/summary";
+import { podoDisappearanceTime, podoLastCoord, podoTrail } from "./lib/summary";
 import { RecordList } from "./components/RecordList";
 import { PeopleList } from "./components/PeopleList";
 import { RecordDetail } from "./components/RecordDetail";
@@ -190,6 +190,7 @@ export function App() {
                     onSelect={setSelectedRecord}
                     hasActiveFilters={hasActiveFilters}
                     onClearFilters={clearFilters}
+                    postDisappearanceSince={podoDisappearanceTime(data.records, canonicalize)}
                   />
                 )}
                 {view === "timeline" && (

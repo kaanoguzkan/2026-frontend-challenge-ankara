@@ -78,6 +78,17 @@ export function podoLastCoord(
   return findPodoCoord(records, canonicalize);
 }
 
+export function podoDisappearanceTime(
+  records: Record[],
+  canonicalize: Canonicalize = identityCanonicalize
+): string | undefined {
+  const times = records
+    .filter((r) => r.timestamp && r.people.some((n) => canonicalize(n) === PODO_KEY))
+    .map((r) => r.timestamp!);
+  if (!times.length) return undefined;
+  return times.sort().at(-1);
+}
+
 export function podoTrail(
   records: Record[],
   canonicalize: Canonicalize = identityCanonicalize
