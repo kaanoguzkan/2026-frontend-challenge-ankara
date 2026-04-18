@@ -101,6 +101,14 @@ export function App() {
     setSelectedRecord(null);
   };
 
+  const hasActiveFilters =
+    !!search || enabledSources.size < ALL_SOURCES.length || !!selectedPerson;
+  const clearFilters = () => {
+    setSearch("");
+    setEnabledSources(new Set(ALL_SOURCES));
+    handleSelectPerson(null);
+  };
+
   const searchRef = useRef<HTMLInputElement>(null);
 
   const timelineRecords = filteredRecords.filter((r) =>
@@ -180,6 +188,8 @@ export function App() {
                     records={filteredRecords}
                     selectedId={selectedRecord?.id}
                     onSelect={setSelectedRecord}
+                    hasActiveFilters={hasActiveFilters}
+                    onClearFilters={clearFilters}
                   />
                 )}
                 {view === "timeline" && (

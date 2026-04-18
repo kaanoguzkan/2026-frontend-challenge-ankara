@@ -14,7 +14,8 @@ export function Timeline({ records, selectedId, focusName, onSelect }: Props) {
   if (!records.length) {
     return (
       <div className="empty-state">
-        No timestamped records for {focusName} in the current filter.
+        <div className="empty-state__title">No timestamped records for {focusName} in the current filter.</div>
+        <div className="empty-state__hint">Select a different person on the left, or loosen the source filter.</div>
       </div>
     );
   }

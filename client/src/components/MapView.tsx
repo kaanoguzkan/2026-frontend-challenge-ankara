@@ -49,7 +49,12 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
   }, [withCoords, selectedId]);
 
   if (!withCoords.length) {
-    return <div className="empty-state">No records with coordinates in the current filter.</div>;
+    return (
+      <div className="empty-state">
+        <div className="empty-state__title">No records with coordinates in the current filter.</div>
+        <div className="empty-state__hint">Sightings and check-ins are the main geotagged sources — try enabling them.</div>
+      </div>
+    );
   }
 
   return (
