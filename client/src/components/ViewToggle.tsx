@@ -1,9 +1,10 @@
-export type View = "list" | "timeline" | "map";
+export type View = "list" | "timeline" | "map" | "graph";
 
 const VIEWS: { id: View; label: string }[] = [
   { id: "list", label: "List" },
   { id: "timeline", label: "Timeline" },
   { id: "map", label: "Map" },
+  { id: "graph", label: "Graph" },
 ];
 
 interface Props {

@@ -529,6 +529,18 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   padding: 2px 4px;
 }
 .scrubber__reset:hover { text-decoration: underline; }
+.graph {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.graph__svg { width: 100%; height: auto; max-height: 70vh; background: #0b1220; border-radius: 8px; }
+.graph__node:hover circle { stroke: #ffffff; }
+.graph__hint { color: var(--muted); font-size: 12px; margin: 0; }
 .people__stats { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1000px) {

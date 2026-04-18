@@ -14,6 +14,7 @@ import { MapView } from "./components/MapView";
 import { Controls } from "./components/Controls";
 import { MainHeader } from "./components/MainHeader";
 import { TimeScrubber } from "./components/TimeScrubber";
+import { CoOccurrenceGraph } from "./components/CoOccurrenceGraph";
 import type { View } from "./components/ViewToggle";
 import type { Record, Source } from "./types";
 
@@ -35,7 +36,7 @@ function serializeSources(s: Set<Source>): string {
   return s.size === ALL_SOURCES.length ? "" : ALL_SOURCES.filter((x) => s.has(x)).join(",");
 }
 
-const VALID_VIEWS: View[] = ["list", "timeline", "map"];
+const VALID_VIEWS: View[] = ["list", "timeline", "map", "graph"];
 
 export function App() {
   const { data, loading, error } = useRecords();
@@ -233,6 +234,15 @@ export function App() {
                     onSelect={setSelectedRecord}
                     podoCoord={podoLastCoord(data.records, canonicalize)}
                     podoTrail={podoTrail(data.records, canonicalize)}
+                  />
+                )}
+                {view === "graph" && (
+                  <CoOccurrenceGraph
+                    records={filteredRecords}
+                    canonicalize={canonicalize}
+                    displayName={(key: string) => people.find((p) => p.key === key)?.displayName ?? key}
+                    selectedKey={selectedPerson}
+                    onSelect={handleSelectPerson}
                   />
                 )}
               </main>
