@@ -23,7 +23,7 @@ Form IDs, API shape, auth, and data-gotchas live in [CLAUDE.md](CLAUDE.md) — d
 - [x] Step 4 — Search, filter, detail
 - [x] Step 5 — Core ship (README + polish)
 - [x] Bonus A — Timeline
-- [ ] Bonus B — Summary panels ("last seen with" / "most suspicious")
+- [x] Bonus B — Summary panels ("last seen with" / "most suspicious")
 - [ ] Bonus C — Map
 - [ ] Bonus D — Fuzzy matching
 

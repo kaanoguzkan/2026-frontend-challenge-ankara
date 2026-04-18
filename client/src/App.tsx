@@ -6,6 +6,7 @@ import { SearchBar } from "./components/SearchBar";
 import { SourceFilter } from "./components/SourceFilter";
 import { RecordDetail } from "./components/RecordDetail";
 import { Timeline } from "./components/Timeline";
+import { SummaryPanel } from "./components/SummaryPanel";
 import { groupByPerson, recordsForPerson } from "./lib/link";
 import type { Record, Source } from "./types";
 
@@ -158,6 +159,17 @@ export function App() {
                   </button>
                 </div>
               </div>
+              {data && (
+                <SummaryPanel
+                  records={data.records}
+                  selectedPersonKey={selectedPerson}
+                  selectedPersonName={selectedPersonName ?? null}
+                  onSelectPerson={(key) => {
+                    setSelectedPerson(key);
+                    setSelectedRecord(null);
+                  }}
+                />
+              )}
               {view === "list" ? (
                 <RecordList
                   records={filteredRecords}

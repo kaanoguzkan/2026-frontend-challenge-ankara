@@ -233,6 +233,75 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 .view-toggle__btn:hover { color: var(--text); }
 .view-toggle__btn--on { background: var(--surface-hover); color: var(--text); }
 
+.summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.summary__title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.summary__hint { margin: -4px 0 10px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.summary__block { margin-bottom: 10px; }
+.summary__block:last-child { margin-bottom: 0; }
+.summary__label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.summary__value { font-size: 14px; }
+.summary__meta { color: var(--muted); font-size: 12px; }
+.summary__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.summary__chip {
+  all: unset;
+  cursor: pointer;
+  background: var(--surface-hover);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.summary__chip:hover { color: var(--accent); }
+.summary__chip-count { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.summary__rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.summary__rank-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  border: 1px solid transparent;
+}
+.summary__rank-btn:hover { border-color: var(--border); }
+.summary__rank-pos { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.summary__rank-name { font-size: 14px; font-weight: 500; }
+.summary__rank-score {
+  background: var(--danger);
+  color: #0e1116;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+.summary__rank-why { grid-column: 2 / -1; color: var(--muted); font-size: 11px; }
+
 .timeline {
   display: flex;
   flex-direction: column;
