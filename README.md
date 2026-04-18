@@ -30,7 +30,29 @@ npm run dev
 - Client: <http://localhost:5173>
 - Server: <http://localhost:3001/api/records>
 
-See [PLAN.md](PLAN.md) for the step-by-step build plan and [CLAUDE.md](CLAUDE.md) for API reference, form IDs, and data shape.
+See [PLAN.md](PLAN.md) for the step-by-step build plan, [REPORT.md](REPORT.md) for a full write-up of what was built, and [CLAUDE.md](CLAUDE.md) for API reference.
+
+## Features
+
+**Core**
+- Fetches and normalizes submissions from all 5 Jotform forms server-side (API key never hits the browser).
+- Links records across forms by person name so clicking a person shows every trace of them.
+- Search, source filter chips, and a detail panel with cross-linked related records.
+- Loading skeletons, partial-fetch warnings, and an error boundary.
+
+**Bonuses**
+- **Timeline view** grouped by day.
+- **Map view** with OSM tiles, source-colored markers, a star pin at Podo's last confirmed location, a 1 km radius circle, and a numbered polyline showing Podo's chronological path (one step per unique place).
+- **Co-occurrence graph** — SVG radial layout, edges weighted by shared records.
+- **"Most suspicious" scoring** with an explainable breakdown (anonymous tips, urgent messages, proximity to Podo's last location).
+- **"Last seen with"** co-occurrence for the selected person.
+- **Post-disappearance anomaly flag** on records timestamped after Podo's last confirmed sighting.
+- **Fuzzy name matching** (Turkish-fold + Levenshtein) behind a toggle.
+- **Time-range scrubber** that filters every view.
+- **Shareable deep links** — view, person, search, sources, fuzzy, time range, and selected record all round-trip through the URL hash.
+- **Keyboard shortcuts** — `/` focuses search, `↑/↓` walks records, `Esc` clears selection.
+- **Light / dark theme** toggle, persisted and respecting `prefers-color-scheme`.
+- **Responsive pass** for narrow viewports.
 
 # 🚀 Challenge Duyurusu
 
