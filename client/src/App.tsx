@@ -145,8 +145,13 @@ export function App() {
                 type="checkbox"
                 checked={fuzzy}
                 onChange={(e) => {
-                  setFuzzy(e.target.checked);
-                  setSelectedPerson(null);
+                  const next = e.target.checked;
+                  if (selectedPerson) {
+                    const nextPeople = data ? groupByPerson(data.records, next) : [];
+                    const match = nextPeople.find((p) => p.aliases.includes(selectedPerson));
+                    setSelectedPerson(match ? match.key : null);
+                  }
+                  setFuzzy(next);
                   setSelectedRecord(null);
                 }}
               />
