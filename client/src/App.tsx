@@ -258,8 +258,8 @@ export function App() {
                     selectedId={selectedRecord?.id}
                     onSelect={setSelectedRecord}
                     podoCoord={podoLastCoord(data.records, canonicalize)}
-                    podoTrail={podoTrail(data.records, canonicalize)}
-                    podoSteps={podoTrailSteps(data.records, canonicalize)}
+                    podoTrail={podoTrail(filteredRecords, canonicalize)}
+                    podoSteps={podoTrailSteps(filteredRecords, canonicalize)}
                   />
                 )}
                 {view === "graph" && (
