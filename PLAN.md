@@ -16,7 +16,7 @@ Form IDs, API shape, auth, and data-gotchas live in [CLAUDE.md](CLAUDE.md) — d
 
 ## Progress tracker
 
-- [ ] Step 0 — Repo scaffolding
+- [x] Step 0 — Repo scaffolding
 - [ ] Step 1 — Server: fetch + normalize
 - [ ] Step 2 — Client: scaffold + list view
 - [ ] Step 3 — Record linking + people list
