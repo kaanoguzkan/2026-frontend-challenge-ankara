@@ -22,6 +22,7 @@ interface Args {
   selectedRecord: Record | null;
   search: string;
   enabledSources: Set<Source>;
+  timeRange?: [number, number] | null;
 }
 
 const PODO_FALLBACK = { key: "podo", name: "Podo" };
@@ -33,6 +34,7 @@ export function useInvestigation({
   selectedRecord,
   search,
   enabledSources,
+  timeRange,
 }: Args): Investigation {
   const people = useMemo(
     () => (records ? groupByPerson(records, fuzzy) : []),
@@ -67,8 +69,9 @@ export function useInvestigation({
       search,
       enabledSources,
       personAliases: selectedPerson ? aliasesForKey(selectedPerson) : null,
+      timeRange,
     });
-  }, [records, search, enabledSources, selectedPerson, aliasesForKey]);
+  }, [records, search, enabledSources, selectedPerson, aliasesForKey, timeRange]);
 
   const relatedRecords = useMemo(() => {
     if (!records || !selectedRecord) return [];

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecords } from "./hooks/useRecords";
 import { useInvestigation } from "./hooks/useInvestigation";
 import { useHashState } from "./hooks/useHashState";
@@ -13,6 +13,7 @@ import { SummaryPanel } from "./components/SummaryPanel";
 import { MapView } from "./components/MapView";
 import { Controls } from "./components/Controls";
 import { MainHeader } from "./components/MainHeader";
+import { TimeScrubber } from "./components/TimeScrubber";
 import type { View } from "./components/ViewToggle";
 import type { Record, Source } from "./types";
 
@@ -48,6 +49,7 @@ export function App() {
     VALID_VIEWS.includes(hash.view as View) ? (hash.view as View) : "list"
   );
   const [fuzzy, setFuzzy] = useState(hash.fuzzy === "1");
+  const [timeRange, setTimeRange] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     setHash({
@@ -59,6 +61,19 @@ export function App() {
     });
   }, [view, selectedPerson, search, enabledSources, fuzzy, setHash]);
 
+  const timeBounds = useMemo<[number, number] | null>(() => {
+    if (!data) return null;
+    let min = Infinity;
+    let max = -Infinity;
+    for (const r of data.records) {
+      const t = Date.parse(r.timestamp ?? r.createdAt);
+      if (isNaN(t)) continue;
+      if (t < min) min = t;
+      if (t > max) max = t;
+    }
+    return min < max ? [min, max] : null;
+  }, [data]);
+
   const investigation = useInvestigation({
     records: data?.records ?? null,
     fuzzy,
@@ -66,6 +81,7 @@ export function App() {
     selectedRecord,
     search,
     enabledSources,
+    timeRange,
   });
 
   const {
@@ -159,6 +175,15 @@ export function App() {
             onFuzzyChange={handleFuzzyChange}
             searchRef={searchRef}
           />
+          {timeBounds && (
+            <TimeScrubber
+              min={timeBounds[0]}
+              max={timeBounds[1]}
+              value={timeRange ?? timeBounds}
+              onChange={setTimeRange}
+              onReset={() => setTimeRange(null)}
+            />
+          )}
 
           <div className="layout">
             <PeopleList
