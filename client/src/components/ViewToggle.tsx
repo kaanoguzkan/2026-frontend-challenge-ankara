@@ -1,7 +1,8 @@
-export type View = "list" | "timeline" | "map" | "graph";
+export type View = "overview" | "people" | "timeline" | "map" | "graph";
 
 const VIEWS: { id: View; label: string }[] = [
-  { id: "list", label: "List" },
+  { id: "overview", label: "Overview" },
+  { id: "people", label: "People" },
   { id: "timeline", label: "Timeline" },
   { id: "map", label: "Map" },
   { id: "graph", label: "Graph" },
@@ -12,19 +13,23 @@ interface Props {
   onChange: (view: View) => void;
 }
 
-export function ViewToggle({ view, onChange }: Props) {
+export function TopNav({ view, onChange }: Props) {
   return (
-    <div className="view-toggle">
+    <nav className="top-nav" aria-label="Primary">
       {VIEWS.map((v) => (
         <button
           key={v.id}
           type="button"
-          className={`view-toggle__btn${view === v.id ? " view-toggle__btn--on" : ""}`}
+          className={`top-nav__btn${view === v.id ? " top-nav__btn--on" : ""}`}
           onClick={() => onChange(v.id)}
+          aria-current={view === v.id ? "page" : undefined}
         >
           {v.label}
         </button>
       ))}
-    </div>
+    </nav>
   );
 }
+
+// Kept for backward-compat import paths.
+export { TopNav as ViewToggle };

@@ -1,25 +1,15 @@
-import { ViewToggle, type View } from "./ViewToggle";
-
 interface Props {
-  view: View;
-  onViewChange: (view: View) => void;
-  count: number;
-  selectedPersonName: string | null;
-  timelineFocusName: string;
+  title: string;
+  count?: number;
+  hint?: string;
 }
 
-function buildTitle(view: View, selectedPersonName: string | null, timelineFocusName: string): string {
-  if (view === "timeline") return `${timelineFocusName}'s timeline`;
-  if (selectedPersonName) return `Records involving ${selectedPersonName}`;
-  return "All records";
-}
-
-export function MainHeader({ view, onViewChange, count, selectedPersonName, timelineFocusName }: Props) {
+export function MainHeader({ title, count, hint }: Props) {
   return (
     <div className="main__header">
-      <h2>{buildTitle(view, selectedPersonName, timelineFocusName)}</h2>
-      <span className="main__count">{count}</span>
-      <ViewToggle view={view} onChange={onViewChange} />
+      <h2>{title}</h2>
+      {typeof count === "number" && <span className="main__count">{count}</span>}
+      {hint && <span className="main__hint">{hint}</span>}
     </div>
   );
 }

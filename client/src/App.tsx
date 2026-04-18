@@ -18,7 +18,7 @@ import { TimeScrubber } from "./components/TimeScrubber";
 import { CoOccurrenceGraph } from "./components/CoOccurrenceGraph";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingSkeleton } from "./components/Skeleton";
-import type { View } from "./components/ViewToggle";
+import { TopNav, type View } from "./components/ViewToggle";
 import type { Record, Source } from "./types";
 
 const ALL_SOURCES: Source[] = [
@@ -39,7 +39,7 @@ function serializeSources(s: Set<Source>): string {
   return s.size === ALL_SOURCES.length ? "" : ALL_SOURCES.filter((x) => s.has(x)).join(",");
 }
 
-const VALID_VIEWS: View[] = ["list", "timeline", "map", "graph"];
+const VALID_VIEWS: View[] = ["overview", "people", "timeline", "map", "graph"];
 
 export function App() {
   const { data, loading, error } = useRecords();
@@ -51,7 +51,7 @@ export function App() {
   const [search, setSearch] = useState(hash.q ?? "");
   const [enabledSources, setEnabledSources] = useState<Set<Source>>(() => parseSources(hash.sources));
   const [view, setView] = useState<View>(
-    VALID_VIEWS.includes(hash.view as View) ? (hash.view as View) : "list"
+    VALID_VIEWS.includes(hash.view as View) ? (hash.view as View) : "overview"
   );
   const [fuzzy, setFuzzy] = useState(hash.fuzzy === "1");
   const [timeRange, setTimeRange] = useState<[number, number] | null>(() => {
@@ -62,7 +62,7 @@ export function App() {
 
   useEffect(() => {
     setHash({
-      view: view === "list" ? "" : view,
+      view: view === "overview" ? "" : view,
       person: selectedPerson ?? "",
       q: search,
       sources: serializeSources(enabledSources),
@@ -154,6 +154,9 @@ export function App() {
     r.people.some((n) => canonicalize(n) === timelineFocus.key)
   );
 
+  const personNudge = view === "overview" || view === "people" ? undefined :
+    selectedPersonName ? `Focused on ${selectedPersonName}` : undefined;
+
   const navigableRecords = view === "timeline" ? timelineRecords : filteredRecords;
 
   useKeyboardShortcuts({
@@ -210,49 +213,101 @@ export function App() {
             />
           )}
 
-          <div className="layout">
-            <PeopleList
-              people={people}
-              selectedKey={selectedPerson}
-              onSelect={handleSelectPerson}
-            />
-            <div className="workspace">
-              <ErrorBoundary>
+          <TopNav view={view} onChange={setView} />
+
+          {personNudge && (
+            <div className="focus-pill" role="status">
+              <span>{personNudge}</span>
+              <button type="button" onClick={() => handleSelectPerson(null)} aria-label="Clear person focus">×</button>
+            </div>
+          )}
+
+          <ErrorBoundary>
+            {view === "overview" && (
               <main className="main">
-                <MainHeader
-                  view={view}
-                  onViewChange={setView}
-                  count={filteredRecords.length}
-                  selectedPersonName={selectedPersonName}
-                  timelineFocusName={timelineFocus.name}
-                />
+                <MainHeader title="Overview" hint="Suspicion and last-seen-with summaries" />
                 <SummaryPanel
                   records={data.records}
                   selectedPersonKey={selectedPerson}
                   selectedPersonName={selectedPersonName}
                   canonicalize={canonicalize}
-                  onSelectPerson={(key) => handleSelectPerson(key)}
-                  onSelectRecord={setSelectedRecord}
+                  onSelectPerson={(key) => {
+                    handleSelectPerson(key);
+                    setView("people");
+                  }}
+                  onSelectRecord={(r) => {
+                    setSelectedRecord(r);
+                    setView("people");
+                  }}
                 />
-                {view === "list" && (
-                  <RecordList
-                    records={filteredRecords}
-                    selectedId={selectedRecord?.id}
-                    onSelect={setSelectedRecord}
-                    hasActiveFilters={hasActiveFilters}
-                    onClearFilters={clearFilters}
-                    postDisappearanceSince={podoDisappearanceTime(data.records, canonicalize)}
-                  />
-                )}
-                {view === "timeline" && (
+              </main>
+            )}
+
+            {view === "people" && (
+              <div className="layout">
+                <PeopleList
+                  people={people}
+                  selectedKey={selectedPerson}
+                  onSelect={handleSelectPerson}
+                />
+                <div className="workspace">
+                  <main className="main">
+                    <MainHeader
+                      title={selectedPersonName ? `Records involving ${selectedPersonName}` : "All records"}
+                      count={filteredRecords.length}
+                    />
+                    <RecordList
+                      records={filteredRecords}
+                      selectedId={selectedRecord?.id}
+                      onSelect={setSelectedRecord}
+                      hasActiveFilters={hasActiveFilters}
+                      onClearFilters={clearFilters}
+                      postDisappearanceSince={podoDisappearanceTime(data.records, canonicalize)}
+                    />
+                  </main>
+                  {selectedRecord && (
+                    <RecordDetail
+                      record={selectedRecord}
+                      relatedRecords={relatedRecords}
+                      onClose={() => setSelectedRecord(null)}
+                      onSelectRecord={setSelectedRecord}
+                      onSelectPerson={(key) => handleSelectPerson(key)}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {view === "timeline" && (
+              <div className="workspace">
+                <main className="main">
+                  <MainHeader title={`${timelineFocus.name}'s timeline`} count={timelineRecords.length} />
                   <Timeline
                     records={timelineRecords}
                     selectedId={selectedRecord?.id}
                     focusName={timelineFocus.name}
                     onSelect={setSelectedRecord}
                   />
+                </main>
+                {selectedRecord && (
+                  <RecordDetail
+                    record={selectedRecord}
+                    relatedRecords={relatedRecords}
+                    onClose={() => setSelectedRecord(null)}
+                    onSelectRecord={setSelectedRecord}
+                    onSelectPerson={(key) => {
+                      handleSelectPerson(key);
+                      setView("people");
+                    }}
+                  />
                 )}
-                {view === "map" && (
+              </div>
+            )}
+
+            {view === "map" && (
+              <div className="workspace">
+                <main className="main">
+                  <MainHeader title="Map" count={filteredRecords.length} hint="★ = Podo's last known location" />
                   <MapView
                     records={filteredRecords}
                     selectedId={selectedRecord?.id}
@@ -261,29 +316,38 @@ export function App() {
                     podoTrail={podoTrail(filteredRecords, canonicalize)}
                     podoSteps={podoTrailSteps(filteredRecords, canonicalize)}
                   />
-                )}
-                {view === "graph" && (
-                  <CoOccurrenceGraph
-                    records={filteredRecords}
-                    canonicalize={canonicalize}
-                    displayName={(key: string) => people.find((p) => p.key === key)?.displayName ?? key}
-                    selectedKey={selectedPerson}
-                    onSelect={handleSelectPerson}
+                </main>
+                {selectedRecord && (
+                  <RecordDetail
+                    record={selectedRecord}
+                    relatedRecords={relatedRecords}
+                    onClose={() => setSelectedRecord(null)}
+                    onSelectRecord={setSelectedRecord}
+                    onSelectPerson={(key) => {
+                      handleSelectPerson(key);
+                      setView("people");
+                    }}
                   />
                 )}
-              </main>
-              </ErrorBoundary>
-              {selectedRecord && (
-                <RecordDetail
-                  record={selectedRecord}
-                  relatedRecords={relatedRecords}
-                  onClose={() => setSelectedRecord(null)}
-                  onSelectRecord={setSelectedRecord}
-                  onSelectPerson={(key) => handleSelectPerson(key)}
+              </div>
+            )}
+
+            {view === "graph" && (
+              <main className="main">
+                <MainHeader title="Co-occurrence graph" hint="Edges weighted by shared records; click a node to focus" />
+                <CoOccurrenceGraph
+                  records={filteredRecords}
+                  canonicalize={canonicalize}
+                  displayName={(key: string) => people.find((p) => p.key === key)?.displayName ?? key}
+                  selectedKey={selectedPerson}
+                  onSelect={(key) => {
+                    handleSelectPerson(key);
+                    setView("people");
+                  }}
                 />
-              )}
-            </div>
-          </div>
+              </main>
+            )}
+          </ErrorBoundary>
         </>
       )}
     </div>
