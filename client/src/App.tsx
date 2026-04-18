@@ -16,6 +16,7 @@ import { Controls } from "./components/Controls";
 import { MainHeader } from "./components/MainHeader";
 import { TimeScrubber } from "./components/TimeScrubber";
 import { CoOccurrenceGraph } from "./components/CoOccurrenceGraph";
+import { OverviewPage } from "./components/OverviewPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingSkeleton } from "./components/Skeleton";
 import { TopNav, type View } from "./components/ViewToggle";
@@ -224,23 +225,21 @@ export function App() {
 
           <ErrorBoundary>
             {view === "overview" && (
-              <main className="main">
-                <MainHeader title="Overview" hint="Suspicion and last-seen-with summaries" />
-                <SummaryPanel
-                  records={data.records}
-                  selectedPersonKey={selectedPerson}
-                  selectedPersonName={selectedPersonName}
-                  canonicalize={canonicalize}
-                  onSelectPerson={(key) => {
-                    handleSelectPerson(key);
-                    setView("people");
-                  }}
-                  onSelectRecord={(r) => {
-                    setSelectedRecord(r);
-                    setView("people");
-                  }}
-                />
-              </main>
+              <OverviewPage
+                records={data.records}
+                canonicalize={canonicalize}
+                selectedPerson={selectedPerson}
+                selectedPersonName={selectedPersonName}
+                onSelectPerson={(key) => {
+                  handleSelectPerson(key);
+                  setView("people");
+                }}
+                onSelectRecord={(r) => {
+                  setSelectedRecord(r);
+                  setView("people");
+                }}
+                onGoto={(v) => setView(v)}
+              />
             )}
 
             {view === "people" && (
