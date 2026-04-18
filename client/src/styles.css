@@ -257,10 +257,45 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 .view-toggle__btn--on { background: var(--surface-hover); color: var(--text); }
 
 .map {
+  position: relative;
   height: 560px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--border);
+}
+.map__legend {
+  position: absolute;
+  right: 12px;
+  bottom: 24px;
+  z-index: 500;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+.map__legend-row { display: flex; align-items: center; gap: 6px; }
+.map__legend-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--text) 30%, transparent);
+}
+.map__legend-star { color: var(--accent); font-size: 14px; line-height: 1; }
+.podo-marker { background: transparent; border: none; }
+.podo-marker__pin {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
 .map .leaflet-container { background: var(--chart-bg); }
 .map .leaflet-popup-content-wrapper,

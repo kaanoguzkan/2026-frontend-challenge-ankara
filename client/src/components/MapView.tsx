@@ -1,8 +1,15 @@
 import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Circle, Polyline, Popup, useMap } from "react-leaflet";
-import type { LatLngBoundsExpression } from "leaflet";
-import type { Record } from "../types";
+import { MapContainer, TileLayer, CircleMarker, Circle, Polyline, Popup, Marker, useMap } from "react-leaflet";
+import L, { type LatLngBoundsExpression } from "leaflet";
+import type { Record, Source } from "../types";
 import { SOURCE_COLORS, SOURCE_LABELS } from "../types";
+
+const PODO_ICON = L.divIcon({
+  className: "podo-marker",
+  html: '<div class="podo-marker__pin" aria-hidden="true">★</div>',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
 
 interface Props {
   records: Record[];
@@ -57,6 +64,12 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
     );
   }
 
+  const presentSources = useMemo(() => {
+    const set = new Set<Source>();
+    for (const r of withCoords) set.add(r.source);
+    return Array.from(set);
+  }, [withCoords]);
+
   return (
     <div className="map">
       <MapContainer
@@ -78,17 +91,25 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
           />
         )}
         {podoCoord && (
-          <Circle
-            center={[podoCoord.lat, podoCoord.lng]}
-            radius={1000}
-            pathOptions={{
-              color: "#ff2bd6",
-              weight: 2,
-              dashArray: "6 4",
-              fillColor: "#ff2bd6",
-              fillOpacity: 0.12,
-            }}
-          />
+          <>
+            <Circle
+              center={[podoCoord.lat, podoCoord.lng]}
+              radius={1000}
+              pathOptions={{
+                color: "#ff2bd6",
+                weight: 2,
+                dashArray: "6 4",
+                fillColor: "#ff2bd6",
+                fillOpacity: 0.12,
+              }}
+            />
+            <Marker position={[podoCoord.lat, podoCoord.lng]} icon={PODO_ICON}>
+              <Popup>
+                <strong>Podo — last confirmed location</strong>
+                <div style={{ fontSize: 11, marginTop: 4 }}>1 km radius shown</div>
+              </Popup>
+            </Marker>
+          </>
         )}
         {withCoords.map((r) => {
           const selected = r.id === selectedId;
@@ -98,7 +119,7 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
               center={[r.coordinates.lat, r.coordinates.lng]}
               radius={selected ? 10 : 7}
               pathOptions={{
-                color: selected ? "#ffffff" : SOURCE_COLORS[r.source],
+                color: selected ? "var(--text)" : SOURCE_COLORS[r.source],
                 weight: selected ? 3 : 1,
                 fillColor: SOURCE_COLORS[r.source],
                 fillOpacity: 0.85,
@@ -117,6 +138,24 @@ export function MapView({ records, selectedId, onSelect, podoCoord, podoTrail }:
           );
         })}
       </MapContainer>
+      <div className="map__legend" aria-label="Map legend">
+        {podoCoord && (
+          <div className="map__legend-row">
+            <span className="map__legend-star">★</span>
+            <span>Podo — last seen (1 km radius)</span>
+          </div>
+        )}
+        {presentSources.map((s) => (
+          <div key={s} className="map__legend-row">
+            <span
+              className="map__legend-dot"
+              style={{ background: SOURCE_COLORS[s] }}
+              aria-hidden="true"
+            />
+            <span>{SOURCE_LABELS[s]}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
