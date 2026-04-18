@@ -5,8 +5,11 @@ import { PeopleList } from "./components/PeopleList";
 import { SearchBar } from "./components/SearchBar";
 import { SourceFilter } from "./components/SourceFilter";
 import { RecordDetail } from "./components/RecordDetail";
+import { Timeline } from "./components/Timeline";
 import { groupByPerson, recordsForPerson } from "./lib/link";
 import type { Record, Source } from "./types";
+
+type View = "list" | "timeline";
 
 const ALL_SOURCES: Source[] = [
   "checkins",
@@ -26,8 +29,19 @@ export function App() {
   const [search, setSearch] = useState("");
   const [enabledSources, setEnabledSources] = useState<Set<Source>>(new Set(ALL_SOURCES));
   const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
+  const [view, setView] = useState<View>("list");
 
   const people = useMemo(() => (data ? groupByPerson(data.records) : []), [data]);
+
+  const timelineFocus = useMemo(() => {
+    if (!data) return { key: "podo", name: "Podo" };
+    if (selectedPerson) {
+      const p = people.find((p) => p.key === selectedPerson);
+      if (p) return { key: p.key, name: p.displayName };
+    }
+    const podo = people.find((p) => p.key === "podo");
+    return podo ? { key: podo.key, name: podo.displayName } : { key: "podo", name: "Podo" };
+  }, [data, selectedPerson, people]);
 
   const filteredRecords = useMemo(() => {
     if (!data) return [];
@@ -116,33 +130,66 @@ export function App() {
                 setSelectedRecord(null);
               }}
             />
-            <main className="main">
+            <div className="workspace">
+              <main className="main">
               <div className="main__header">
                 <h2>
-                  {selectedPersonName
+                  {view === "timeline"
+                    ? `${timelineFocus.name}'s timeline`
+                    : selectedPersonName
                     ? `Records involving ${selectedPersonName}`
                     : "All records"}
                 </h2>
                 <span className="main__count">{filteredRecords.length}</span>
+                <div className="view-toggle">
+                  <button
+                    type="button"
+                    className={`view-toggle__btn${view === "list" ? " view-toggle__btn--on" : ""}`}
+                    onClick={() => setView("list")}
+                  >
+                    List
+                  </button>
+                  <button
+                    type="button"
+                    className={`view-toggle__btn${view === "timeline" ? " view-toggle__btn--on" : ""}`}
+                    onClick={() => setView("timeline")}
+                  >
+                    Timeline
+                  </button>
+                </div>
               </div>
-              <RecordList
-                records={filteredRecords}
-                selectedId={selectedRecord?.id}
-                onSelect={setSelectedRecord}
-              />
+              {view === "list" ? (
+                <RecordList
+                  records={filteredRecords}
+                  selectedId={selectedRecord?.id}
+                  onSelect={setSelectedRecord}
+                />
+              ) : (
+                <Timeline
+                  records={filteredRecords.filter((r) =>
+                    r.people.some(
+                      (n) => n.toLowerCase().trim().replace(/\s+/g, " ") === timelineFocus.key
+                    )
+                  )}
+                  selectedId={selectedRecord?.id}
+                  focusName={timelineFocus.name}
+                  onSelect={setSelectedRecord}
+                />
+              )}
             </main>
-            {selectedRecord && (
-              <RecordDetail
-                record={selectedRecord}
-                relatedRecords={relatedRecords}
-                onClose={() => setSelectedRecord(null)}
-                onSelectRecord={setSelectedRecord}
-                onSelectPerson={(key) => {
-                  setSelectedPerson(key);
-                  setSelectedRecord(null);
-                }}
-              />
-            )}
+              {selectedRecord && (
+                <RecordDetail
+                  record={selectedRecord}
+                  relatedRecords={relatedRecords}
+                  onClose={() => setSelectedRecord(null)}
+                  onSelectRecord={setSelectedRecord}
+                  onSelectPerson={(key) => {
+                    setSelectedPerson(key);
+                    setSelectedRecord(null);
+                  }}
+                />
+              )}
+            </div>
           </div>
         </>
       )}
